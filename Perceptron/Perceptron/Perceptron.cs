@@ -6,60 +6,70 @@ namespace Perceptron
 {
     class Perceptron
     {
-        double bias; //Threshold
-        double[] weights;
-        Random random;
+        public double Bias;
+        public double[] Weights;
+        public double Output { get; set; }
 
-        public Perceptron(int inputCount, Random random)
+        public Perceptron(int inputCount)
         {
-            this.random = random;
-            weights = new double[inputCount];
-            Randomize();
+            Weights = new double[inputCount];
         }
 
-        public void Randomize()
+        public void Randomize(Random random)
         {
-            //set w0 = 1, w1 = 1
-            //randomize the weights between 0 - 2
 
-            for(int i = 0; i < weights.Length; i++)
+            for (int i = 0; i < Weights.Length; i++)
             {
-                weights[i] = random.NextDouble() * 2;
+                Weights[i] = random.NextDouble(-1, 1);
             }
         }
 
-        public void Mutate(double scale)
+        public void Mutate(Random random, double rate, double learningRate)
         {
-            int index = random.Next(0, weights.Length);
-
-        }
-
-        // 1 2 = 3
-        // 5 7 = 13
-        public double MAE(double[][] inputs, double[][] outputs)
-        {
-            double error = 0;
-            for(int i = 0; i < inputs.Length; i++)
+            for(int i = 0; i < Weights.Length; i++)
             {
-                for(int j = 0; j < inputs[i].Length; j++)
+                if (random.NextDouble() < rate)
                 {
-                    error += Math.Abs(outputs[i][j] - inputs[i][j]);
+                    Weights[i] += random.NextDouble(-learningRate, learningRate);
                 }
             }
-            error /= inputs.Length;
-            return error;
-        }
 
-        public double Compute(double[] inputs)
-        {
-            // z = i1 * w1 + i2 * w2
-            double output = 0;
-
-            for(int i = 0; i < inputs.Length; i++)
+            if (random.NextDouble() < rate)
             {
-                output += inputs[i] * weights[i];
+                Bias += random.NextDouble(-learningRate, learningRate);
             }
 
+        }
+
+
+        public void Train(double[] inputs, double desiredOutput, double learningRate)
+        {
+            learningRate = Math.Clamp(learningRate, 0.0, 1.0);
+
+            Compute(inputs);
+
+            double error = desiredOutput - Output;
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                Weights[i] += error * inputs[i] * learningRate;
+            }
+            Bias += error * learningRate;
+        }
+
+        public double BinaryStep(double x)
+        {
+            return x < 0 ? 0 : 1;
+        }
+
+        public double Compute(params double[] inputs)
+        {
+            double output = 0;
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                output += inputs[i] * Weights[i];
+            }
+            output = BinaryStep(output + Bias);
+            Output = output;
             return output;
         }
     }
