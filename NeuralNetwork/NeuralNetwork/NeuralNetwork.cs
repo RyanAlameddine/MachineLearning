@@ -51,6 +51,40 @@ namespace NeuralNetwork
                             layers[l].Neurons[i].Weights[j] += random.NextDouble(-scale, scale);
                         }
                     }
+
+                    if (random.NextDouble() < rate)
+                    {
+                        layers[l].Neurons[i].Bias += random.NextDouble(-scale, scale);
+                    }
+                }
+            }
+        }
+
+        public void Crossover(Random random, NeuralNetwork other)
+        {
+            for(int l = 0; l < other.layers.Length; l++)
+            {
+                int cutPoint = random.Next(0, layers[l].Neurons.Length);
+
+                int startIndex;
+                int endIndex;
+                if(random.NextDouble() < .5)
+                {
+                    startIndex = 0;
+                    endIndex = cutPoint;
+                }
+                else
+                {
+                    startIndex = cutPoint;
+                    endIndex = layers[l].Neurons.Length;
+                }
+                for(int i = startIndex; i < endIndex; i++)
+                {
+                    layers[l].Neurons[i].Bias = other.layers[l].Neurons[i].Bias;
+                    for(int j = 0; j < layers[l].Neurons[i].Weights.Length; j++)
+                    {
+                        layers[l].Neurons[i].Weights[j] = other.layers[l].Neurons[i].Weights[j];
+                    }
                 }
             }
         }
