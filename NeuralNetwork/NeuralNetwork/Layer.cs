@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace NeuralNetwork
@@ -7,18 +8,19 @@ namespace NeuralNetwork
     class Layer
     {
         public Neuron[] Neurons;
-        public double[] Outputs
-        {
-            get
-            {
-                double[] outputs = new double[Neurons.Length];
-                for(int i = 0; i < Neurons.Length; i++)
-                {
-                    outputs[i] = Neurons[i].Output;
-                }
-                return outputs;
-            }
-        }
+        public double[] Outputs => Neurons.Select(n => n.Output).ToArray();
+        //public double[] Outputs
+        //{
+        //    get
+        //    {
+        //        double[] outputs = new double[Neurons.Length];
+        //        for(int i = 0; i < Neurons.Length; i++)
+        //        {
+        //            outputs[i] = Neurons[i].Output;
+        //        }
+        //        return outputs;
+        //    }
+        //}
 
         public Layer(int inputCount, IActivation[] activations)
         {

@@ -4,19 +4,20 @@ using System.Text;
 
 namespace NeuralNetwork
 {
-    class BinaryStep : IActivation
+    class Sigmoid : IActivation
     {
+        public double Min => -6;
+
+        public double Max => 6;
+
         public double Activate(double input)
         {
-             return input < 0 ? 0 : 1;
+            return 1 / (1 + Math.Exp(-input));
         }
 
         public double Derivative(double input)
         {
-            return 0;
+            return input * (1 - input);
         }
-
-        public double Max => 0.5;
-        public double Min => -0.5;
     }
 }

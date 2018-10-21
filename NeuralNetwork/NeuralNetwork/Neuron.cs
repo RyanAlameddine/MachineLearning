@@ -22,9 +22,9 @@ namespace NeuralNetwork
         {
             for (int i = 0; i < Weights.Length; i++)
             {
-                Weights[i] = random.NextDouble(-1, 1);
+                Weights[i] = random.NextDouble(activation.Min, activation.Max);
             }
-            Bias = random.NextDouble(-1, 1);
+            Bias = random.NextDouble(activation.Min, activation.Max);
         }
 
         public double Compute(params double[] inputs)

@@ -10,7 +10,7 @@ namespace NeuralNetwork
 
         double Derivative(double input);
 
-        double GetMin();
-        double GetMax();
+        double Min { get; }
+        double Max { get; }
     }
 }
