@@ -14,8 +14,8 @@ namespace NeuralNetwork
             Sigmoid sigmoid = new Sigmoid();
 
             // XOR
-            // 3 ? 1                                                                     
-            // bit bit AND OR XOR NOT                                         
+            // 3 ? 1
+            // bit bit AND OR XOR NOT
             double[][] inputs = new double[][]                                           
             {                                                                            
                 //Nand                                                                   
@@ -72,9 +72,9 @@ namespace NeuralNetwork
             {
                 population[i] = (new NeuralNetwork(6, new IActivation[][]
                 {
-                    Enumerable.Repeat(sigmoid, 10).ToArray(),
-                    new IActivation[] { sigmoid }
-                }), 0);
+                    Enumerable.Repeat(binaryStep, 10).ToArray(),
+                    new IActivation[] { binaryStep }
+                }), 1);
                 population[i].network.Randomize(random);
             }
 
@@ -109,13 +109,13 @@ namespace NeuralNetwork
                 //10% keep
                 //80% crossover with a random net from the top 10% AND mutate
                 //10% randomize
-                int crossStart = (int) (population.Length * .1);
-                int randomStart = (int)(population.Length * .9);
+                int crossStart = (int) (population.Length * .05);
+                int randomStart = (int)(population.Length * .7);
                 for (int i = crossStart; i < randomStart; i++)
                 {
                     NeuralNetwork toCross = population[random.Next(0, crossStart)].network;
                     population[i].network.Crossover(random, toCross);
-                    population[i].network.Mutate(random, .2, population[i].network.MAE(inputs, outputs));
+                    population[i].network.Mutate(random, .2, population[i].mae);
                 }
                 for(int i = randomStart; i < population.Length; i++)
                 {
