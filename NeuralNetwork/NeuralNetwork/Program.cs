@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace NeuralNetwork
 {
@@ -16,17 +17,17 @@ namespace NeuralNetwork
             // XOR
             // 3 ? 1
             // bit bit AND OR XOR NOT
-            double[][] inputs = new double[][]                                           
+            double[][] inputs = new double[][]
             {                                                                            
                 //Nand                                                                   
-                new double[] { 0, 0, 1, 0, 0, 1 },                                       
-                new double[] { 0, 1, 1, 0, 0, 1 },                                       
-                new double[] { 1, 0, 1, 0, 0, 1 },                                       
+                new double[] { 0, 0, 1, 0, 0, 1 },
+                new double[] { 0, 1, 1, 0, 0, 1 },
+                new double[] { 1, 0, 1, 0, 0, 1 },
                 new double[] { 1, 1, 1, 0, 0, 1 },                                       
                                                                                          
                 //Or                                                                     
-                new double[] { 0, 0, 0, 1, 0, 0 },                                       
-                new double[] { 0, 1, 0, 1, 0, 0 },                                       
+                new double[] { 0, 0, 0, 1, 0, 0 },
+                new double[] { 0, 1, 0, 1, 0, 0 },
                 new double[] { 1, 0, 0, 1, 0, 0 },
                 new double[] { 1, 1, 0, 1, 0, 0 },
 
@@ -65,6 +66,10 @@ namespace NeuralNetwork
                 1, 0, 0, 1,
             };
 
+            int epochs = 0;
+
+            #region Genetic
+            /*
             // population: 1000 nn
             (NeuralNetwork network, double mae)[] population = new(NeuralNetwork network, double mae)[1000];
 
@@ -79,7 +84,7 @@ namespace NeuralNetwork
             }
 
             double top = double.MaxValue;
-            
+
             do
             {
                 // run the population
@@ -122,6 +127,44 @@ namespace NeuralNetwork
                     population[i].network.Randomize(random);
                 }
             } while (top != 0);
+            */
+            #endregion
+
+            #region Backprop
+            NeuralNetwork neuralNetwork = new NeuralNetwork(6, new IActivation[][]
+                {
+                    Enumerable.Repeat(sigmoid, 10).ToArray(),
+                    new IActivation[] { sigmoid }
+                });
+            neuralNetwork.Randomize(random);
+
+            StringBuilder topValues = new StringBuilder();
+            while (topValues.ToString() != "{ 1.00 1.00 1.00 0.00 0.00 1.00 1.00 1.00 0.00 0.00 0.00 1.00 1.00 0.00 0.00 0.00 0.00 1.00 1.00 0.00 1.00 0.00 0.00 1.00 }")
+            {
+                Console.WriteLine($"Epochs: {epochs}");
+                topValues = new StringBuilder("{ ");
+                epochs++;
+
+                if (epochs >= 100000)
+                {
+                    epochs = 0;
+                    neuralNetwork.Randomize(random);
+                }
+
+                neuralNetwork.Train(inputs, outputs, .2);
+                for (int i = 0; i < inputs.Length; i++)
+                {
+                    topValues.Append($"{neuralNetwork.Compute(inputs[i])[0]:0.00}");
+                    topValues.Append(' ');
+                }
+
+                topValues.Append($"}}");
+                Console.SetCursorPosition(0, 0);
+                Console.WriteLine("{ 1.00 1.00 1.00 0.00 0.00 1.00 1.00 1.00 0.00 0.00 0.00 1.00 1.00 0.00 0.00 0.00 0.00 1.00 1.00 0.00 1.00 0.00 0.00 1.00 }");
+                Console.WriteLine(topValues.ToString());
+            }
+
+            #endregion
 
             Console.ReadKey();
         }

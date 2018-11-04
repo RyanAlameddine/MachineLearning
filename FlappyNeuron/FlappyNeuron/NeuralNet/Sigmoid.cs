@@ -15,7 +15,7 @@ namespace NeuralNetwork
             return 1 / (1 + Math.Exp(-input));
         }
 
-        public double Derivative(double input)
+        public double Derivative(double input) //derivative with already calculated output
         {
             return input * (1 - input);
         }

@@ -90,5 +90,103 @@ namespace NeuralNetwork
         }
 
         //Train -> Supervised Learning
+
+        public void Train(double[][] inputs, double[] desiredOutputs, double learningRate = 1)
+        {
+            ClearUpdates();
+            for(int i = 0; i < inputs.Length; i++)
+            {
+                Compute(inputs[i]);
+                CalculateError(desiredOutputs[i]);
+                CalculateUpdates(inputs[i], learningRate);
+            }
+            UpdateWeights();
+        }
+
+        private void ClearUpdates()
+        {
+            foreach (Layer layer in layers)
+            {
+                foreach (Neuron neuron in layer.Neurons)
+                {
+                    for (int i = 0; i < neuron.WeightsUpdate.Length; i++)
+                    {
+                        neuron.WeightsUpdate[i] = 0;
+                    }
+                    neuron.BiasUpdate = 0;
+                }
+            }
+        }
+
+        private void CalculateError(double desiredOutputs)
+        {
+            Layer outputLayer = layers[layers.Length - 1];
+
+            //output
+            Neuron outputNeuron = outputLayer.Neurons[0];
+            double outputError = desiredOutputs - outputNeuron.Output;
+            outputNeuron.Delta = outputError * outputNeuron.activation.Derivative(outputNeuron.Output);
+            
+
+            for(int l = layers.Length - 2; l >= 0; l--)
+            {
+                Layer layer = layers[l];
+                for (int i = 0; i <layer.Neurons.Length; i++)
+                {
+                    Neuron neuron = layer.Neurons[i];
+                    double error = 0;
+                    foreach(Neuron target in layers[l + 1].Neurons)
+                    {
+                        error += target.Delta * target.Weights[i];
+                    }
+                    neuron.Delta = error * neuron.activation.Derivative(neuron.Output);
+                }
+            }
+        }
+
+        private void CalculateUpdates(double[] inputs, double learningRate)
+        {
+            Layer inputLayer = layers[0];
+            for (int i = 0; i < inputLayer.Neurons.Length; i++)
+            {
+                Neuron neuron = inputLayer.Neurons[i];
+                for (int j = 0; j < neuron.Weights.Length; j++)
+                {
+                    neuron.WeightsUpdate[j] += learningRate * neuron.Delta * inputs[j];
+                }
+                neuron.BiasUpdate += learningRate * neuron.Delta * 1;
+            }
+
+            for (int i = 1; i < layers.Length; i++)
+            {
+                Layer hiddenLayer = layers[i];
+                Layer prevLayer = layers[i - 1];
+
+                for (int j = 0; j < hiddenLayer.Neurons.Length; j++)
+                {
+                    Neuron neuron = hiddenLayer.Neurons[j];
+                    for (int k = 0; k < neuron.Weights.Length; k++)
+                    {
+                        neuron.WeightsUpdate[k] += learningRate * neuron.Delta * prevLayer.Outputs[k];
+                    }
+                    neuron.BiasUpdate += learningRate * neuron.Delta * 1; //FIXED
+                }
+            }
+        }
+
+        public void UpdateWeights()
+        {
+            foreach (Layer layer in layers)
+            {
+                foreach (Neuron neuron in layer.Neurons)
+                {
+                    for (int i = 0; i < neuron.Weights.Length; i++)
+                    {
+                        neuron.Weights[i] += neuron.WeightsUpdate[i];
+                    }
+                    neuron.Bias += neuron.BiasUpdate;
+                }
+            }
+        }
     }
 }

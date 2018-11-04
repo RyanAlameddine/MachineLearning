@@ -63,7 +63,7 @@ namespace FlappyNeuron
             Bird.JumpPower = -700 / 60f;
             Bird.XSpeed = 600 / 60f;
             Bird.Scale = .3f;
-            Pipe.gapHeightOffset = 150;
+            Pipe.gapHeightOffset = 200;
             Pipe.pairSeparationWidth = 750;
 
             IsMouseVisible = true;
@@ -100,13 +100,35 @@ namespace FlappyNeuron
 
         }
 
+        bool killed = false;
+        int deadBirds = 0;
         protected override void Update(GameTime gameTime)
         {
+            deadBirds = 0;
             KeyboardState keyboardState = Keyboard.GetState();
             timeScale += keyboardState.IsKeyDown(Keys.Up) && timeScale < 30 ? .01f : 0;
 
             timeScale -= keyboardState.IsKeyDown(Keys.Down) && timeScale > .1 ? .01f : 0;
             this.TargetElapsedTime = TimeSpan.FromSeconds(1.0f / (timeScale*60));
+
+            if (keyboardState.IsKeyDown(Keys.Enter))
+            {
+                if (!killed)
+                {
+                    killed = true;
+                    foreach(Bird bird in birds)
+                    {
+                        if (bird.fitness < 0)
+                        {
+                            bird.fitness = (int)(x + 900 - Math.Abs(bird.Position.Y - pipes[0].Position.Y));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                killed = false;
+            }
 
             x += Bird.XSpeed;
 
@@ -127,7 +149,6 @@ namespace FlappyNeuron
                 }
             }
 
-            int deadBirds = 0;
             foreach (Bird bird in birds)
             {
                 if (bird.fitness == -1)
@@ -137,9 +158,7 @@ namespace FlappyNeuron
                     {
                         pipeIndex = 0;
                     }
-                    inputs[0] = pipes[pipeIndex].Position.X + pipes[pipeIndex].Texture.Width - bird.Position.X;
-                    inputs[1] = Math.Abs(pipes[pipeIndex].Position.Y - bird.Position.Y);
-
+                
                     double output = bird.Brain.Compute(new double[]
                     {
                         bird.Position.Y - pipes[pipeIndex].Position.Y,
@@ -166,8 +185,8 @@ namespace FlappyNeuron
                 generation++;
 
                 Array.Sort(birds, (a, b) => b.fitness.CompareTo(a.fitness));
-                int crossStart = (int)(birds.Length * .05);
-                int randomStart = (int)(birds.Length * .7);
+                int crossStart = (int)(birds.Length * .2);
+                int randomStart = (int)(birds.Length * .8);
                 for (int i = crossStart; i < randomStart; i++)
                 {
                     NeuralNetwork.NeuralNetwork toCross = birds[random.Next(0, crossStart)].Brain;
@@ -188,6 +207,7 @@ namespace FlappyNeuron
                 lastPipe = Pipe.pairSeparationWidth;
                 foreach (Bird bird in birds)
                 {
+                    bird.ySpeed = 0;
                     bird.Position = new Vector2(100, 500);
                     bird.fitness = -1;
                     bird.Tint = Color.White;
@@ -211,7 +231,7 @@ namespace FlappyNeuron
                 pipe.Draw(spriteBatch);
             }
 
-            spriteBatch.DrawString(arial, $"Generation: {generation}, Fitness: {fitness}", Vector2.Zero, Color.Blue);
+            spriteBatch.DrawString(arial, $"Generation: {generation}, Dead: {deadBirds} Fitness: {fitness}", new Vector2(500, 10), Color.Blue);
 
             spriteBatch.End();
             base.Draw(gameTime);

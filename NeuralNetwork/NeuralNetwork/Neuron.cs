@@ -10,12 +10,17 @@ namespace NeuralNetwork
         public double[] Weights;
         public double Output;
         
-        IActivation activation;
+        public IActivation activation;
+
+        public double Delta = 0;
+        public double[] WeightsUpdate;
+        public double BiasUpdate = 0;
 
         public Neuron(int inputCount, IActivation activation)
         {
             this.activation = activation;
             Weights = new double[inputCount];
+            WeightsUpdate = new double[inputCount];
         }
 
         public void Randomize(Random random)

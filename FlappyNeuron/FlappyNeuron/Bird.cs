@@ -17,7 +17,7 @@ namespace FlappyNeuron
 
         public Color Tint = Color.White;
 
-        private float ySpeed;
+        public float ySpeed;
 
         private double timeToJump = -1;
 
