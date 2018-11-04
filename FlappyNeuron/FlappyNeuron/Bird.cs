@@ -52,7 +52,8 @@ namespace FlappyNeuron
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Texture, Position, null, Tint, 0f, Vector2.Zero, Scale, SpriteEffects.None, 0f);
+            int layerDepth = Tint != Color.Red ? 0 : 1;
+            spriteBatch.Draw(Texture, Position, null, Tint, 0f, Vector2.Zero, Scale, SpriteEffects.None, layerDepth);
         }
     }
 }

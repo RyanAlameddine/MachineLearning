@@ -23,8 +23,8 @@ namespace FlappyNeuron
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Texture, new Vector2(Position.X, Position.Y + gapHeightOffset), null, Color.White, 0, new Vector2(0, 0), Vector2.One, SpriteEffects.None, 0);
-            spriteBatch.Draw(Texture, new Vector2(Position.X + Texture.Width, Position.Y - gapHeightOffset), null, Color.White, (float) Math.PI, new Vector2(0, 0), Vector2.One, SpriteEffects.None, 0);
+            spriteBatch.Draw(Texture, new Vector2(Position.X, Position.Y + gapHeightOffset), null, Color.White, 0, new Vector2(0, 0), Vector2.One, SpriteEffects.None, .5f);
+            spriteBatch.Draw(Texture, new Vector2(Position.X + Texture.Width, Position.Y - gapHeightOffset), null, Color.White, (float) Math.PI, new Vector2(0, 0), Vector2.One, SpriteEffects.None, .5f);
             //spriteBatch.Draw(Texture, new Vector2(Position.X, Position.Y + gapHeightOffset), null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.FlipVertically, 0);
         }
 

@@ -38,7 +38,7 @@ namespace NeuralNetwork
         }
 
         //Mutate -> Unsupervised Learning -> Genetics
-        public void Mutate(Random random, double rate, double scale)
+        public void Mutate(Random random, double rate)
         { 
             for(int l = 0; l < layers.Length; l++)
             {
@@ -48,13 +48,13 @@ namespace NeuralNetwork
                     {
                         if(random.NextDouble() < rate)
                         {
-                            layers[l].Neurons[i].Weights[j] += random.NextDouble(-scale, scale);
+                            layers[l].Neurons[i].Weights[j] *= random.NextDouble(0.5, 1.5) * random.RandSign();
                         }
                     }
 
                     if (random.NextDouble() < rate)
                     {
-                        layers[l].Neurons[i].Bias += random.NextDouble(-scale, scale);
+                        layers[l].Neurons[i].Bias *= random.NextDouble(0.5, 1.5) * random.RandSign();
                     }
                 }
             }

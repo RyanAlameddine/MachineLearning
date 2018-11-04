@@ -11,6 +11,11 @@ namespace NeuralNetwork
             return gen.NextDouble() * (max - min) + min;
         }
 
+        public static int RandSign(this Random gen)
+        {
+            return gen.Next(0, 2) * 2 - 1;
+        }
+
         public static double MAE(this NeuralNetwork neuralNetwork, double[][] inputs, double[] expectedOutputs)
         {
             //if the output layer is not size 1 throw

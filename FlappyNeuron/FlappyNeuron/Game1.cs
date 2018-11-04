@@ -16,11 +16,18 @@ namespace FlappyNeuron
         BinaryStep binaryStep = new BinaryStep();
 
         List<Pipe> pipes = new List<Pipe>();
-        Bird[] birds = new Bird[1];
+        Bird[] birds = new Bird[100];
         float x = 0;
         float lastPipe = 0;
 
         float[] inputs = new float[2];
+
+        int generation = 0;
+        int fitness = 0;
+
+        SpriteFont arial;
+
+        float timeScale = 1;
 
         //Pipe 
         // Top Pipe
@@ -54,9 +61,9 @@ namespace FlappyNeuron
         {
             Bird.Gravity = 2000 / 60f;
             Bird.JumpPower = -700 / 60f;
-            Bird.XSpeed = 500 / 60f;
+            Bird.XSpeed = 600 / 60f;
             Bird.Scale = .3f;
-            Pipe.gapHeightOffset = 200;
+            Pipe.gapHeightOffset = 150;
             Pipe.pairSeparationWidth = 750;
 
             IsMouseVisible = true;
@@ -70,6 +77,7 @@ namespace FlappyNeuron
 
             Texture2D birdTexture = Content.Load<Texture2D>("bird");
             Texture2D pipeTexture = Content.Load<Texture2D>("pipe");
+            arial = Content.Load<SpriteFont>("Arial");
 
             pipes.Add(new Pipe(random.Next(200, 700), pipeTexture));
             pipes.Add(new Pipe(random.Next(200, 700), pipeTexture));
@@ -94,6 +102,11 @@ namespace FlappyNeuron
 
         protected override void Update(GameTime gameTime)
         {
+            KeyboardState keyboardState = Keyboard.GetState();
+            timeScale += keyboardState.IsKeyDown(Keys.Up) && timeScale < 30 ? .01f : 0;
+
+            timeScale -= keyboardState.IsKeyDown(Keys.Down) && timeScale > .1 ? .01f : 0;
+            this.TargetElapsedTime = TimeSpan.FromSeconds(1.0f / (timeScale*60));
 
             x += Bird.XSpeed;
 
@@ -113,7 +126,8 @@ namespace FlappyNeuron
                     i--;
                 }
             }
-            
+
+            int deadBirds = 0;
             foreach (Bird bird in birds)
             {
                 if (bird.fitness == -1)
@@ -125,19 +139,58 @@ namespace FlappyNeuron
                     }
                     inputs[0] = pipes[pipeIndex].Position.X + pipes[pipeIndex].Texture.Width - bird.Position.X;
                     inputs[1] = Math.Abs(pipes[pipeIndex].Position.Y - bird.Position.Y);
-                    //TODO RUN THROUGH NEURAL NET
 
-                    bool jump = false;
+                    double output = bird.Brain.Compute(new double[]
+                    {
+                        bird.Position.Y - pipes[pipeIndex].Position.Y,
+                        pipes[pipeIndex].Position.X - bird.Position.X
+                    })[0];
+
+                    bool jump = output == 1;
                     bird.Update(gameTime, jump);
                     Rectangle birdBox = new Rectangle((int)bird.Position.X, (int)bird.Position.Y, (int)(bird.Texture.Width * Bird.Scale), (int)(bird.Texture.Height * Bird.Scale));
-                    if (birdBox.Intersects(pipes[pipeIndex].topBox) || birdBox.Intersects(pipes[pipeIndex].bottomBox))
+                    if (birdBox.Intersects(pipes[pipeIndex].topBox) || birdBox.Intersects(pipes[pipeIndex].bottomBox) || birdBox.Y < 0 || birdBox.Y > 900)
                     {
                         bird.fitness = x + 900 - Math.Abs(bird.Position.Y - pipes[0].Position.Y);
                     }
+                    fitness = (int) (x + 900 - Math.Abs(bird.Position.Y - pipes[0].Position.Y));
                 }
                 else
                 {
+                    deadBirds++;
                     bird.Tint = Color.Red;
+                }
+            }
+            if(deadBirds == birds.Length)
+            {
+                generation++;
+
+                Array.Sort(birds, (a, b) => b.fitness.CompareTo(a.fitness));
+                int crossStart = (int)(birds.Length * .05);
+                int randomStart = (int)(birds.Length * .7);
+                for (int i = crossStart; i < randomStart; i++)
+                {
+                    NeuralNetwork.NeuralNetwork toCross = birds[random.Next(0, crossStart)].Brain;
+                    birds[i].Brain.Crossover(random, toCross);
+                    birds[i].Brain.Mutate(random, .15);
+                }
+                for (int i = randomStart; i < birds.Length; i++)
+                {
+                    birds[i].Brain.Randomize(random);
+                }
+
+                x = 0;
+                Texture2D pipeTexture = pipes[0].Texture;
+                pipes.Clear();
+                pipes.Add(new Pipe(random.Next(200, 700), pipeTexture));
+                pipes.Add(new Pipe(random.Next(200, 700), pipeTexture));
+                pipes[1].Position.X += Pipe.pairSeparationWidth;
+                lastPipe = Pipe.pairSeparationWidth;
+                foreach (Bird bird in birds)
+                {
+                    bird.Position = new Vector2(100, 500);
+                    bird.fitness = -1;
+                    bird.Tint = Color.White;
                 }
             }
             base.Update(gameTime);
@@ -146,8 +199,8 @@ namespace FlappyNeuron
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            
-            spriteBatch.Begin();
+
+            spriteBatch.Begin(SpriteSortMode.BackToFront);
 
             foreach (Bird bird in birds)
             {
@@ -157,6 +210,8 @@ namespace FlappyNeuron
             {
                 pipe.Draw(spriteBatch);
             }
+
+            spriteBatch.DrawString(arial, $"Generation: {generation}, Fitness: {fitness}", Vector2.Zero, Color.Blue);
 
             spriteBatch.End();
             base.Draw(gameTime);
