@@ -131,6 +131,7 @@ namespace NeuralNetwork
             #endregion
 
             #region Backprop
+            /*
             NeuralNetwork neuralNetwork = new NeuralNetwork(6, new IActivation[][]
                 {
                     Enumerable.Repeat(sigmoid, 10).ToArray(),
@@ -163,12 +164,28 @@ namespace NeuralNetwork
                 Console.WriteLine("{ 1.00 1.00 1.00 0.00 0.00 1.00 1.00 1.00 0.00 0.00 0.00 1.00 1.00 0.00 0.00 0.00 0.00 1.00 1.00 0.00 1.00 0.00 0.00 1.00 }");
                 Console.WriteLine(topValues.ToString());
             }
-
+            */
             #endregion
 
-            Console.ReadKey();
+            MNIST mnist = new MNIST();
+
+            // 784,400,10
+            NeuralNetwork neuralNetwork = new NeuralNetwork(784, new IActivation[][]
+                {
+                    Enumerable.Repeat(new Sigmoid(), 600).ToArray(),
+                    Enumerable.Repeat(new Sigmoid(), 300).ToArray(),
+                    Enumerable.Repeat(new Sigmoid(), 10).ToArray(),
+                });
+            neuralNetwork.Randomize(random);
+
+            double mae = 0;
+            do
+            {
+                mae = neuralNetwork.Train(mnist.Pixels, mnist.Outputs, 1, .3, .9);
+                Console.WriteLine($"{mae}");
+            }
+            while (mae > 0);
+            ;
         }
-
-
     }
 }

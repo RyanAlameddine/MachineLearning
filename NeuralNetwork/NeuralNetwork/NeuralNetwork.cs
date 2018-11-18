@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace NeuralNetwork
@@ -90,17 +91,33 @@ namespace NeuralNetwork
         }
 
         //Train -> Supervised Learning
+        public double Train(double[][] inputs, double[][] desiredOutputs, int batchSize, double learningRate = 1, double momentum = 0.5)
+        {
+            batchSize = Math.Clamp(batchSize, 1, inputs.Length);
+            double sumError = 0;
+            for (int i = 0; i < inputs.Length/batchSize; i++)
+            {
+                sumError += Train(inputs.Skip(i * batchSize).Take(batchSize).ToArray(), desiredOutputs.Skip(i * batchSize).Take(batchSize).ToArray(), learningRate, momentum);
+            }
+            return sumError;
+        }
 
-        public void Train(double[][] inputs, double[] desiredOutputs, double learningRate = 1)
+        public double Train(double[][] inputs, double[][] desiredOutputs, double learningRate = 1, double momentum = 0.5)
         {
             ClearUpdates();
+            double sumError = 0;
             for(int i = 0; i < inputs.Length; i++)
             {
                 Compute(inputs[i]);
-                CalculateError(desiredOutputs[i]);
+                sumError += CalculateError(desiredOutputs[i]);
                 CalculateUpdates(inputs[i], learningRate);
             }
-            UpdateWeights();
+            UpdateWeights(momentum);
+            momentum = Math.Clamp(momentum, 0, 1);
+         
+
+            //calculate mae
+            return sumError;
         }
 
         private void ClearUpdates()
@@ -118,20 +135,24 @@ namespace NeuralNetwork
             }
         }
 
-        private void CalculateError(double desiredOutputs)
+        private double CalculateError(double[] desiredOutputs)
         {
             Layer outputLayer = layers[layers.Length - 1];
 
             //output
-            Neuron outputNeuron = outputLayer.Neurons[0];
-            double outputError = desiredOutputs - outputNeuron.Output;
-            outputNeuron.Delta = outputError * outputNeuron.activation.Derivative(outputNeuron.Output);
-            
+            double sumError = 0;
+            for(int i = 0; i < outputLayer.Neurons.Length; i++)
+            {
+                Neuron outputNeuron = outputLayer.Neurons[i];
+                double outputError = desiredOutputs[i] - outputNeuron.Output;
+                outputNeuron.Delta = outputError * outputNeuron.activation.Derivative(outputNeuron.Output);
+                sumError += Math.Abs(outputError);
+            }
 
             for(int l = layers.Length - 2; l >= 0; l--)
             {
                 Layer layer = layers[l];
-                for (int i = 0; i <layer.Neurons.Length; i++)
+                for (int i = 0; i < layer.Neurons.Length; i++)
                 {
                     Neuron neuron = layer.Neurons[i];
                     double error = 0;
@@ -142,6 +163,8 @@ namespace NeuralNetwork
                     neuron.Delta = error * neuron.activation.Derivative(neuron.Output);
                 }
             }
+
+            return sumError;
         }
 
         private void CalculateUpdates(double[] inputs, double learningRate)
@@ -167,14 +190,14 @@ namespace NeuralNetwork
                     Neuron neuron = hiddenLayer.Neurons[j];
                     for (int k = 0; k < neuron.Weights.Length; k++)
                     {
-                        neuron.WeightsUpdate[k] += learningRate * neuron.Delta * prevLayer.Outputs[k];
+                        neuron.WeightsUpdate[k] += learningRate * neuron.Delta * prevLayer.Neurons[k].Output;
                     }
                     neuron.BiasUpdate += learningRate * neuron.Delta * 1; //FIXED
                 }
             }
         }
 
-        public void UpdateWeights()
+        public void UpdateWeights(double momentum)
         {
             foreach (Layer layer in layers)
             {
@@ -182,9 +205,12 @@ namespace NeuralNetwork
                 {
                     for (int i = 0; i < neuron.Weights.Length; i++)
                     {
-                        neuron.Weights[i] += neuron.WeightsUpdate[i];
+                        neuron.PreviousWeightsUpdate[i] = neuron.WeightsUpdate[i] + momentum * neuron.PreviousWeightsUpdate[i];
+                        neuron.Weights[i] += neuron.PreviousWeightsUpdate[i];
+                        
                     }
-                    neuron.Bias += neuron.BiasUpdate;
+                    neuron.PreviousBiasUpdate = neuron.BiasUpdate + momentum * neuron.PreviousBiasUpdate;
+                    neuron.Bias += neuron.PreviousBiasUpdate;
                 }
             }
         }
