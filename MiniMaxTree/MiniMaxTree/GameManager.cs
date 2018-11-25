@@ -4,10 +4,10 @@ using System.Text;
 
 namespace MiniMaxTree
 {
-    public abstract class GameManager
+    public abstract class GameManager<T> where T : GameState<T>
     {
-        public abstract void GenerateTree(MiniMaxNode root, bool maximizer);
+        public abstract void GenerateTree(MiniMaxNode<T> root, bool maximizer);
 
-        public abstract void CalculateTree(MiniMaxNode root, bool maximizer);
+        public abstract void CalculateTree(MiniMaxNode<T> root, bool maximizer);
     }
 }

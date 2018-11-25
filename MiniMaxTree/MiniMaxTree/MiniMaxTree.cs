@@ -4,29 +4,27 @@ using System.Text;
 
 namespace MiniMaxTree
 {
-    public class MiniMaxTree
+    public class MiniMaxTree<T> where T : GameState<T>
     {
-        public GameManager GameManager;
+        public GameManager<T> GameManager;
 
-        public MiniMaxNode Root;
+        public MiniMaxNode<T> Root;
 
-        public MiniMaxTree(GameManager GameManager, bool maximizerFirst)
+        public MiniMaxTree(GameManager<T> GameManager, bool maximizerFirst, T state)
         {
             this.GameManager = GameManager;
 
-            Root = new MiniMaxNode(new TicTacGameState());
-            GameManager.GenerateTree(Root, maximizerFirst);
-            GameManager.CalculateTree(Root, true);
+            Root = new MiniMaxNode<T>(state);
         }
     }
 
-    public class MiniMaxNode
+    public class MiniMaxNode<T> where T : GameState<T>
     {
-        public MiniMaxNode[] children;
-        public GameState gameState;
+        public MiniMaxNode<T>[] children;
+        public T gameState;
         public int Value;
 
-        public MiniMaxNode(GameState gameState)
+        public MiniMaxNode(T gameState)
         {
             this.gameState = gameState;
         }

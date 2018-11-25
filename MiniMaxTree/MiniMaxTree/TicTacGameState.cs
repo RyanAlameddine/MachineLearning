@@ -5,9 +5,9 @@ using System.Text;
 
 namespace MiniMaxTree
 {
-    class TicTacGameState : GameState
+    class TicTacGameState : GameState<TicTacGameState>
     {
-        public override GameState BlankState {
+        public override TicTacGameState BlankState {
             get
             {
                 return new TicTacGameState();
@@ -18,9 +18,9 @@ namespace MiniMaxTree
         public bool XerVictory = false;
         public bool Tie = false;
 
-        public override GameState[] getPossibleStates(bool Xer)
+        public override void GetPossibleStates(bool Xer, List<TicTacGameState> states)
         {
-            LinkedList<TicTacGameState> states = new LinkedList<TicTacGameState>();
+            states.Clear();
 
             for(int x = 0; x < 3; x++)
             {
@@ -31,25 +31,26 @@ namespace MiniMaxTree
                         continue;
                     }
 
-                    states.AddFirst(new TicTacGameState());
+                    var state = new TicTacGameState();
+                    states.Add(state);
                     for (int ix = 0; ix < 3; ix++)
                     {
                         for (int iy = 0; iy < 3; iy++)
                         {
-                            states.First.Value.marks[ix, iy] = marks[ix, iy];
+                            state.marks[ix, iy] = marks[ix, iy];
                         }
                     }
 
                     if (Xer)
                     {
-                        states.First.Value.marks[x, y] = 'X';
+                        state.marks[x, y] = 'X';
                     }
                     else
                     {
-                        states.First.Value.marks[x, y] = 'O';
+                        state.marks[x, y] = 'O';
                     }
-                    states.First.Value.gameFinished = EvaluateVictory(states.First.Value, x, y);
-                    states.First.Value.XerVictory = Xer;
+                    state.XerVictory = Xer;
+                    state.gameFinished = EvaluateVictory(state, x, y);
                     
                 }
             }
@@ -58,8 +59,6 @@ namespace MiniMaxTree
                 gameFinished = true;
                 Tie = true;
             }
-
-            return states.ToArray();
         }
 
         bool EvaluateVictory(TicTacGameState gameState, int x, int y)

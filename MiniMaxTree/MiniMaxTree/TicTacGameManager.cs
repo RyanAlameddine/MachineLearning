@@ -5,9 +5,9 @@ using System.Text;
 
 namespace MiniMaxTree
 {
-    class TicTacGameManager : GameManager
+    class TicTacGameManager : GameManager<TicTacGameState>
     {
-        public override void CalculateTree(MiniMaxNode root, bool maximizer)
+        public override void CalculateTree(MiniMaxNode<TicTacGameState> root, bool maximizer)
         {
 
             if(root.children == null || root.children.Length == 0)
@@ -29,7 +29,7 @@ namespace MiniMaxTree
 
             CalculateTree(root.children[0], !maximizer);
             root.Value = root.children[0].Value;
-            foreach(MiniMaxNode child in root.children)
+            foreach(MiniMaxNode<TicTacGameState> child in root.children)
             {
                 CalculateTree(child, !maximizer);
                 if(maximizer && child.Value > root.Value)
@@ -42,19 +42,21 @@ namespace MiniMaxTree
             }
         }
 
-        public override void GenerateTree(MiniMaxNode root, bool maximizer)
+        public override void GenerateTree(MiniMaxNode<TicTacGameState> root, bool maximizer)
         {
-            Stack<(bool maximizer, MiniMaxNode node)> miniMaxNodes = new Stack<(bool maximizer, MiniMaxNode node)>();
+            Stack<(bool maximizer, MiniMaxNode<TicTacGameState> node)> miniMaxNodes = new Stack<(bool maximizer, MiniMaxNode<TicTacGameState> node)>();
+
+            List<TicTacGameState> states = new List<TicTacGameState>();
 
             miniMaxNodes.Push((maximizer, root));
             while (miniMaxNodes.Count > 0)
             {
-                (bool maximizer, MiniMaxNode node) currentNode = miniMaxNodes.Pop();
-                GameState[] states = currentNode.node.gameState.getPossibleStates(currentNode.maximizer);
-                currentNode.node.children = new MiniMaxNode[states.Length];
-                for (int i = 0; i < states.Length; i++)
+                (bool maximizer, MiniMaxNode<TicTacGameState> node) currentNode = miniMaxNodes.Pop();
+                currentNode.node.gameState.GetPossibleStates(currentNode.maximizer, states);
+                currentNode.node.children = new MiniMaxNode<TicTacGameState>[states.Count];
+                for (int i = 0; i < states.Count; i++)
                 {
-                    currentNode.node.children[i] = new MiniMaxNode(states[i]);
+                    currentNode.node.children[i] = new MiniMaxNode<TicTacGameState>(states[i]);
                     if (!states[i].gameFinished)
                     {
                         miniMaxNodes.Push((!currentNode.maximizer, currentNode.node.children[i]));
