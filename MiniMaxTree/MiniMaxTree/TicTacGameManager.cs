@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace MiniMaxTree
 {
     class TicTacGameManager : GameManager
     {
-
         public override void CalculateTree(MiniMaxNode root, bool maximizer)
         {
+
             if(root.children == null || root.children.Length == 0)
             {
                 if(((TicTacGameState)root.gameState).Tie)
@@ -25,6 +26,8 @@ namespace MiniMaxTree
                 }
                 return;
             }
+
+            CalculateTree(root.children[0], !maximizer);
             root.Value = root.children[0].Value;
             foreach(MiniMaxNode child in root.children)
             {

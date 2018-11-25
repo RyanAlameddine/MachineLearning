@@ -55,6 +55,7 @@ namespace MiniMaxTree
             }
             if(!gameFinished && states.Count == 0)
             {
+                gameFinished = true;
                 Tie = true;
             }
 
@@ -78,7 +79,7 @@ namespace MiniMaxTree
             {
                 for (int x = 0; x < 3; x++)
                 {
-                    stringBuilder.Append(marks[x, y] == '\0' ? '#' : marks[x, y]);
+                    stringBuilder.Append(marks[x, y] == '\0' ? "# " : marks[x, y] + " ");
                 }
                 stringBuilder.Append('\n');
             }
