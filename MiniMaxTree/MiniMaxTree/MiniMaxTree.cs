@@ -22,7 +22,7 @@ namespace MiniMaxTree
     {
         public MiniMaxNode<T>[] children;
         public T gameState;
-        public int Value;
+        public double Value;
 
         public MiniMaxNode(T gameState)
         {

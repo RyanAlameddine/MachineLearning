@@ -36,12 +36,12 @@ namespace MiniMaxTree
 
             while (!C4Tree.Root.gameState.gameFinished)
             {
-                Console.WriteLine(C4Tree.Root.gameState);
+                C4Tree.Root.gameState.ConsoleWrite();
                 ReadOnlySpan<char> charStore = stackalloc char[] { Console.ReadKey().KeyChar };
                 int input = int.Parse(charStore);
                 Console.Clear();
 
-                int x = input;
+                int x = input - 1;
                 
                 Thread.Sleep(300);
 
@@ -51,7 +51,8 @@ namespace MiniMaxTree
 
                 currentC4GS.marks[x, y] = 'O';
 
-                manager.GenerateTree(C4Tree.Root, true, 3);
+                manager.GenerateTree(C4Tree.Root, true, 2);
+                manager.MonteCarlo(C4Tree.Root, true);
                 manager.CalculateTree(C4Tree.Root, true);
 
                 if (C4Tree.Root.children.Length != 0)
@@ -63,7 +64,7 @@ namespace MiniMaxTree
                 }
 
             }
-            Console.WriteLine(C4Tree.Root.gameState);
+            C4Tree.Root.gameState.ConsoleWrite();
         }
 
         static void TicTac()
