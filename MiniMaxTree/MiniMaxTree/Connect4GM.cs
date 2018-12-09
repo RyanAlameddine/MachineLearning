@@ -92,8 +92,17 @@ namespace MiniMaxTree
             }
         }
 
+        private int loops = 0;
+
         private double AlphaBetaMonteCarlo(MiniMaxNode<Connect4GS> root, bool maximizer, double alpha, double beta)
         {
+            loops++;
+            if (loops > 20)
+            {
+                Console.SetCursorPosition(0, 0);
+                root.gameState.ConsoleWrite(true);
+                loops = 0;
+            }
             double bestVal = maximizer ? double.MinValue : double.MaxValue;
             if (root.children == null || root.children.Length == 0)
             {

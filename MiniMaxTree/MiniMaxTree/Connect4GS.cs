@@ -169,21 +169,49 @@ namespace MiniMaxTree
             return stringBuilder.ToString();
         }
 
-        public void ConsoleWrite()
+        public void ConsoleWrite(bool test = false)
         {
+            if (!test)
+            {
+                for (int y = 5; y >= 0; y--)
+                {
+                    for (int x = 0; x < 7; x++)
+                    {
+                        if (marks[x, y] == 'X')
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.Write('X');
+                        }
+                        else if (marks[x, y] == 'O')
+                        {
+
+                            Console.ForegroundColor = ConsoleColor.Blue;
+                            Console.Write('O');
+                        }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                            Console.Write('#');
+                        }
+                    }
+                    Console.Write('\n');
+                }
+                return;
+            }
+
             for (int y = 5; y >= 0; y--)
             {
                 for (int x = 0; x < 7; x++)
                 {
-                    if(marks[x, y] == 'X')
+                    if (marks[x, y] == 'X')
                     {
-
-                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
                         Console.Write('X');
-                    }else if(marks[x, y] == 'O')
+                    }
+                    else if (marks[x, y] == 'O')
                     {
 
-                        Console.ForegroundColor = ConsoleColor.Blue;
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
                         Console.Write('O');
                     }
                     else
