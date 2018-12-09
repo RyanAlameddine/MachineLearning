@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace MiniMaxTree
@@ -23,6 +25,10 @@ namespace MiniMaxTree
     {
         static void Main(string[] args)
         {
+            GCLatencyMode oldMode = GCSettings.LatencyMode;
+            
+            Console.WriteLine(GCSettings.IsServerGC);
+
             List<Linq> LinqedList = Enumerable.Range(0, 100).Select(x => (Linq)x).ToList();
             C4();
 
@@ -42,17 +48,22 @@ namespace MiniMaxTree
                 Console.Clear();
 
                 int x = input - 1;
-                
-                Thread.Sleep(300);
 
                 Connect4GS currentC4GS = C4Tree.Root.gameState;
                 int y = 0;
                 for (; currentC4GS.marks[x, y] != '\0'; y++) ;
 
                 currentC4GS.marks[x, y] = 'O';
+                List<MiniMaxNode<Connect4GS>> leafList = new List<MiniMaxNode<Connect4GS>>();
 
-                manager.GenerateTree(C4Tree.Root, true, 2);
-                manager.MonteCarlo(C4Tree.Root, true);
+                manager.GenerateTree(C4Tree.Root, true, 4);
+                manager.AlphaBetaMonteCarlo(C4Tree.Root, true);
+                //AppendLeafNodes(C4Tree.Root, leafList);
+                //foreach (MiniMaxNode<Connect4GS> c4node in leafList)
+                //{
+                //    manager.MonteCarlo(c4node, true);
+                //    propagate up the tree to revalue each game state
+                //}
                 manager.CalculateTree(C4Tree.Root, true);
 
                 if (C4Tree.Root.children.Length != 0)

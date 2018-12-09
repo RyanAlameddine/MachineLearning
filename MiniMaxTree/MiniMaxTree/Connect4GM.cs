@@ -92,19 +92,93 @@ namespace MiniMaxTree
             }
         }
 
-        public void MonteCarlo(MiniMaxNode<Connect4GS> root, bool maximizer)
+        private double AlphaBetaMonteCarlo(MiniMaxNode<Connect4GS> root, bool maximizer, double alpha, double beta)
         {
+            double bestVal = maximizer ? double.MinValue : double.MaxValue;
+            if (root.children == null || root.children.Length == 0)
+            {
+                MonteCarlo(root, maximizer);
+                return root.Value;
+            }
+            else
+            {
+                for (int i = 0; i < root.children.Length; i++)
+                {
+                    double value = AlphaBetaMonteCarlo(root.children[i], !maximizer, alpha, beta);
+                    if (maximizer)
+                    {
+                        bestVal = dMax(bestVal, value);
+                        alpha   = dMax(alpha,   value);
+                    }
+                    else
+                    {
+                        bestVal = dMin(bestVal, value);
+                        beta    = dMin(beta,    value);
+                    }
+                    if(beta <= alpha)
+                    {
+                        break;
+                    }
+                }
+            }
+            return bestVal;
+        }
+
+        public double AlphaBetaMonteCarlo(MiniMaxNode<Connect4GS> root, bool maximizer)
+        {
+            return AlphaBetaMonteCarlo(root, maximizer, double.MinValue, double.MaxValue);
+        }
+
+        private double dMax(double first, double second)
+        {
+            if(first > second)
+            {
+                return first;
+            }
+            return second;
+        }
+
+        private double dMin(double first, double second)
+        {
+            if(first < second)
+            {
+                return first;
+            }
+            return second;
+        }
+
+        public void MonteCarlo(MiniMaxNode<Connect4GS> leaf, bool maximizer)
+        {
+            if (leaf.gameState.gameFinished)
+            {
+                if (leaf.gameState.Tie)
+                {
+                    leaf.Value = 0;
+                    return;
+                }
+                if (leaf.gameState.XerVictory)
+                {
+                    leaf.Value = double.MaxValue;
+                    return;
+                }
+                else
+                {
+                    leaf.Value = double.MinValue;
+                    return;
+                }
+            }
+            
 
             List<MiniMaxNode<Connect4GS>> roots = new List<MiniMaxNode<Connect4GS>>();
-            AppendLeafNodes(root, roots);
+            roots.Add(leaf);
 
             Random random = new Random();
-            var carloNodes = new (int wins, int games, MiniMaxNode<Connect4GS> node)[10000];
+            var carloNodes = new (int wins, MiniMaxNode<Connect4GS> node)[1000];
             var unvisitedNodes = new List<(MiniMaxNode<Connect4GS> node, int parentIndex)>();
 
             for(int i = 0; i < roots.Count; i++)
             {
-                carloNodes[i] = (0, 0, roots[i]);
+                carloNodes[i] = (0, roots[i]);
 
 
                 for (int slot = 0; slot < 7; slot++)
@@ -146,11 +220,15 @@ namespace MiniMaxTree
                         unvisitedNodes.Add((createdNode, i));
                     }
                 }
-                }
+            }
 
-                for (int i = roots.Count; i < carloNodes.Length; i++)
+            for (int i = roots.Count; i < carloNodes.Length; i++)
             {
                 int rand = random.Next(0, unvisitedNodes.Count);
+                if(unvisitedNodes.Count == 0)
+                {
+                    break;
+                }
                 (MiniMaxNode<Connect4GS> node, int parentIndex) currentNode = unvisitedNodes[rand];
                 unvisitedNodes.RemoveAt(rand);
                 Connect4GS currentState = currentNode.node.gameState.BlankState;
@@ -168,6 +246,11 @@ namespace MiniMaxTree
                     int slot = random.Next(0, 7);
                     if (currentState.marks[slot, 5] != '\0')
                     {
+                        if(currentState.marks[0, 5] != '\0' && currentState.marks[1, 5] != '\0' && currentState.marks[2, 5] != '\0' && currentState.marks[3, 5] != '\0' && currentState.marks[4, 5] != '\0' && currentState.marks[5, 5] != '\0' && currentState.marks[6, 5] != '\0')
+                        {
+                            currentState.gameFinished = true;
+                            currentState.Tie = true;
+                        }
                         continue;
                     }
 
@@ -213,10 +296,6 @@ namespace MiniMaxTree
                             }
                             createdNode.gameState.marks[slot, j] = !currentNode.node.gameState.Xer ? 'X' : 'O';
                             createdNode.gameState.Xer = !currentNode.node.gameState.Xer;
-                            if(createdNode.gameState.ToString() == "\n\n\n\nOX\nO\nX\n" && j == 0 && slot == 6)
-                            {
-                                ;
-                            }
 
                             createdNode.gameState.gameFinished = createdNode.gameState.EvaluateVictory(createdNode.gameState, slot, j);
                             createdNode.gameState.XerVictory = createdNode.gameState.Xer;
@@ -230,27 +309,13 @@ namespace MiniMaxTree
 
 
                 int winCount = currentState.Tie ? 0 : currentState.XerVictory ? 1 : -1;
-                carloNodes[i] = (winCount, 1, currentNode.node);
+                carloNodes[i] = (winCount, currentNode.node);
                 carloNodes[currentNode.parentIndex].wins += winCount;
-                carloNodes[currentNode.parentIndex].games++;
             }
 
             for (int i = 0; i < roots.Count; i++)
             {
-                roots[i].Value = ((double) carloNodes[i].wins) / ((double) carloNodes[i].games);
-            }
-        }
-
-        private void AppendLeafNodes(MiniMaxNode<Connect4GS> root, List<MiniMaxNode<Connect4GS>> nodeList)
-        {
-            if(root.children == null || root.children.Length == 0)
-            {
-                nodeList.Add(root);
-                return;
-            }
-            foreach(MiniMaxNode<Connect4GS> child in root.children)
-            {
-                AppendLeafNodes(child, nodeList);
+                roots[i].Value = carloNodes[i].wins;
             }
         }
     }

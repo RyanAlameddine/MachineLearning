@@ -5,6 +5,24 @@ using System.Text;
 
 namespace MiniMaxTree
 {
+    unsafe struct CharStoreStruct
+    {
+        fixed char data[7 * 6];
+
+        public char this[int x, int y]
+        {
+            get
+            {
+                return data[(x * 7) + y];
+            }
+            set
+            {
+                data[(x * 7) + y] = value;
+            }
+        }
+    }
+
+
     class Connect4GS : GameState<Connect4GS>
     {
         public override Connect4GS BlankState {
@@ -14,7 +32,7 @@ namespace MiniMaxTree
             }
         }
 
-        public char[,] marks = new char[7, 6];
+        public CharStoreStruct marks = new CharStoreStruct();
         public bool XerVictory = false;
         public bool Tie = false;
         public bool Xer = false;
@@ -82,7 +100,7 @@ namespace MiniMaxTree
             int matchXR = x;
             while (matchXL - 1 >= 0 && gameState.marks[matchXL - 1, y] == gameState.marks[x, y]) matchXL--;
             while (matchXR + 1 >  7 && gameState.marks[matchXR + 1, y] == gameState.marks[x, y]) matchXR++;
-            if (matchXR - matchXL >= 4) return true;
+            if (matchXR - matchXL >= 3) return true;
 
             //-
             // -
@@ -102,7 +120,7 @@ namespace MiniMaxTree
                 matchXR++;
                 matchYR--;
             }
-            if (matchXR - matchXL >= 4) return true;
+            if (matchXR - matchXL >= 3) return true;
 
             //   -
             //  -
@@ -122,7 +140,7 @@ namespace MiniMaxTree
                 matchXR++;
                 matchYR++;
             }
-            if (matchXR - matchXL >= 4) return true;
+            if (matchXR - matchXL >= 3) return true;
 
             if (gameState.marks[0, 5] != '\0' && gameState.marks[1, 5] != '\0' && gameState.marks[2, 5] != '\0' && gameState.marks[3, 5] != '\0' && gameState.marks[4, 5] != '\0' && gameState.marks[5, 5] != '\0' && gameState.marks[6, 5] != '\0')
             {
