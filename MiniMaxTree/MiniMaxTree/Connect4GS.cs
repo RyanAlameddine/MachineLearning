@@ -88,7 +88,6 @@ namespace MiniMaxTree
 
         public bool EvaluateVictory(Connect4GS gameState, int x, int y)
         {
-
             //-
             //-
             //-
@@ -99,7 +98,7 @@ namespace MiniMaxTree
             int matchXL = x;
             int matchXR = x;
             while (matchXL - 1 >= 0 && gameState.marks[matchXL - 1, y] == gameState.marks[x, y]) matchXL--;
-            while (matchXR + 1 >  7 && gameState.marks[matchXR + 1, y] == gameState.marks[x, y]) matchXR++;
+            while (matchXR + 1 <  7 && gameState.marks[matchXR + 1, y] == gameState.marks[x, y]) matchXR++;
             if (matchXR - matchXL >= 3) return true;
 
             //-
@@ -173,10 +172,14 @@ namespace MiniMaxTree
         {
             if (!test)
             {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("---------------");
                 for (int y = 5; y >= 0; y--)
                 {
                     for (int x = 0; x < 7; x++)
                     {
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.Write('|');
                         if (marks[x, y] == 'X')
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
@@ -191,18 +194,28 @@ namespace MiniMaxTree
                         else
                         {
                             Console.ForegroundColor = ConsoleColor.Gray;
-                            Console.Write('#');
+                            Console.Write(' ');
                         }
                     }
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.Write('|');
                     Console.Write('\n');
+
+                    Console.WriteLine("---------------");
                 }
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine("|1|2|3|4|5|6|7|");
                 return;
             }
 
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine("---------------");
             for (int y = 5; y >= 0; y--)
             {
                 for (int x = 0; x < 7; x++)
                 {
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.Write('|');
                     if (marks[x, y] == 'X')
                     {
                         Console.ForegroundColor = ConsoleColor.DarkRed;
@@ -217,11 +230,17 @@ namespace MiniMaxTree
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.DarkGray;
-                        Console.Write('#');
+                        Console.Write(' ');
                     }
                 }
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.Write('|');
                 Console.Write('\n');
+
+                Console.WriteLine("---------------");
             }
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine("|1|2|3|4|5|6|7|");
         }
     }
 }

@@ -215,10 +215,6 @@ namespace MiniMaxTree
                             }
                             createdNode.gameState.marks[slot, j] = !roots[i].gameState.Xer ? 'X' : 'O';
                             createdNode.gameState.Xer = !roots[i].gameState.Xer;
-                            if (createdNode.gameState.ToString() == "\n\n\n\nOX\nO\nX\n" && j == 0 && slot == 6)
-                            {
-                                ;
-                            }
 
                             createdNode.gameState.gameFinished = createdNode.gameState.EvaluateVictory(createdNode.gameState, slot, j);
                             createdNode.gameState.XerVictory = createdNode.gameState.Xer;
