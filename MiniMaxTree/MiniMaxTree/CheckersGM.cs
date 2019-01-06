@@ -7,9 +7,9 @@ namespace MiniMaxTree
     {
         public override void CalculateTree(MiniMaxNode<CheckersGS> root, bool maximizer)
         {
-
-            if(root.children == null || root.children.Length == 0)
+            if (root.children == null || root.children.Length == 0)
             {
+                //if game over set values
                 if (root.gameState.gameFinished)
                 {
                     if (root.gameState.Tie)
@@ -30,13 +30,14 @@ namespace MiniMaxTree
 
             CalculateTree(root.children[0], !maximizer);
             root.Value = root.children[0].Value;
-            foreach(MiniMaxNode<CheckersGS> child in root.children)
+            foreach (MiniMaxNode<CheckersGS> child in root.children)
             {
                 CalculateTree(child, !maximizer);
-                if(maximizer && child.Value > root.Value)
+                if (maximizer && child.Value > root.Value)
                 {
                     root.Value = child.Value;
-                }else if(!maximizer && child.Value < root.Value)
+                }
+                else if (!maximizer && child.Value < root.Value)
                 {
                     root.Value = child.Value;
                 }
@@ -47,7 +48,7 @@ namespace MiniMaxTree
         {
             Stack<(bool maximizer, MiniMaxNode<CheckersGS> node)> miniMaxNodes = new Stack<(bool maximizer, MiniMaxNode<CheckersGS> node)>();
 
-            List<CheckersGS> states = new List<CheckersGS>(); 
+            List<CheckersGS> states = new List<CheckersGS>();
 
             miniMaxNodes.Push((maximizer, root));
             while (miniMaxNodes.Count > 0)
@@ -75,7 +76,7 @@ namespace MiniMaxTree
             while (miniMaxNodes.Count > 0)
             {
                 (bool maximizer, MiniMaxNode<CheckersGS> node, int depth) currentNode = miniMaxNodes.Pop();
-                if(currentNode.depth == layerDepth)
+                if (currentNode.depth == layerDepth)
                 {
                     continue;
                 }
@@ -117,14 +118,14 @@ namespace MiniMaxTree
                     if (maximizer)
                     {
                         bestVal = dMax(bestVal, value);
-                        alpha   = dMax(alpha,   value);
+                        alpha = dMax(alpha, value);
                     }
                     else
                     {
                         bestVal = dMin(bestVal, value);
-                        beta    = dMin(beta,    value);
+                        beta = dMin(beta, value);
                     }
-                    if(beta <= alpha)
+                    if (beta <= alpha)
                     {
                         break;
                     }
@@ -140,7 +141,7 @@ namespace MiniMaxTree
 
         private double dMax(double first, double second)
         {
-            if(first > second)
+            if (first > second)
             {
                 return first;
             }
@@ -149,7 +150,7 @@ namespace MiniMaxTree
 
         private double dMin(double first, double second)
         {
-            if(first < second)
+            if (first < second)
             {
                 return first;
             }
@@ -176,7 +177,7 @@ namespace MiniMaxTree
                     return;
                 }
             }
-            
+
 
             List<MiniMaxNode<CheckersGS>> roots = new List<MiniMaxNode<CheckersGS>>();
             roots.Add(leaf);
@@ -185,248 +186,178 @@ namespace MiniMaxTree
             var carloNodes = new (int wins, MiniMaxNode<CheckersGS> node)[1000];
             var unvisitedNodes = new List<(MiniMaxNode<CheckersGS> node, int parentIndex)>();
 
-            for(int i = 0; i < roots.Count; i++)
+            for (int i = 0; i < roots.Count; i++)
             {
                 carloNodes[i] = (0, roots[i]);
 
-                int[,] checkerMarks = new int[8, 8];
-                foreach (Checker checker in roots[i].gameState.checkers)
+                //For each possible turn, create a MiniMaxNode, copy roots[i].gameState into the node with said move, then evaluate victory and add to unvisitedNodes
+
+                Checker root = null;
+                Checker currentChecker = null;
+
+                for (int x = 0; x < 8; x++)
                 {
-                    checkerMarks[checker.X, checker.Y] = checker.Xer ? 1 : -1;
+                    for (int y = 0; y < 8; y++)
+                    {
+                        if (roots[i].gameState.marks[x, y] == (roots[i].gameState.Xer ? 'x' : 'o') || roots[i].gameState.marks[x, y] == (roots[i].gameState.Xer ? 'X' : 'O'))
+                        {
+                            if (root == null)
+                            {
+                                root = new Checker(x, y, roots[i].gameState.marks[x, y]);
+                                currentChecker = root;
+                                continue;
+                            }
+                            currentChecker.next = new Checker(x, y, roots[i].gameState.marks[x, y]);
+                            currentChecker = currentChecker.next;
+                        }
+                    }
                 }
 
-                //Add all moves to unvisitedNodes
-                for (int j = 0; j < roots[i].gameState.checkers.Count; j++)
+                currentChecker = root;
+                List<CheckersGS> states = new List<CheckersGS>();
+                for (; currentChecker != null; currentChecker = currentChecker.next)
                 {
-                    if (roots[i].gameState.checkers[i].CheckUpLeft(checkerMarks))
-                    {
-                        MiniMaxNode<CheckersGS> createdNode = new MiniMaxNode<CheckersGS>(roots[i].gameState.BlankState);
+                    states.AddRange(roots[i].gameState.GetMoves(roots[i].gameState.Xer, currentChecker));
+                }
 
-                        createdNode.gameState.checkers.AddRange(roots[i].gameState.checkers);
-                        Checker checker = createdNode.gameState.checkers[i];
-                        checker.X--;
-                        checker.Y++;
-                        createdNode.gameState.checkers[i] = checker;
-
-                        createdNode.gameState.Xer = roots[i].gameState.Xer;
-                        createdNode.gameState.gameFinished = roots[i].gameState.EvaluateVictory(createdNode.gameState);
-                        createdNode.gameState.XerVictory = roots[i].gameState.Xer;
-
-                        unvisitedNodes.Add((createdNode, i));
-                    }
-                    if (roots[i].gameState.checkers[i].CheckUpRight(checkerMarks))
-                    {
-                        MiniMaxNode<CheckersGS> createdNode = new MiniMaxNode<CheckersGS>(roots[i].gameState.BlankState);
-
-                        createdNode.gameState.checkers.AddRange(roots[i].gameState.checkers);
-                        Checker checker = createdNode.gameState.checkers[i];
-                        checker.X++;
-                        checker.Y++;
-                        createdNode.gameState.checkers[i] = checker;
-
-                        createdNode.gameState.Xer = roots[i].gameState.Xer;
-                        createdNode.gameState.gameFinished = roots[i].gameState.EvaluateVictory(createdNode.gameState);
-                        createdNode.gameState.XerVictory = roots[i].gameState.Xer;
-
-                        unvisitedNodes.Add((createdNode, i));
-                    }
-                    if (roots[i].gameState.checkers[i].CheckDownLeft(checkerMarks))
-                    {
-                        MiniMaxNode<CheckersGS> createdNode = new MiniMaxNode<CheckersGS>(roots[i].gameState.BlankState);
-
-                        createdNode.gameState.checkers.AddRange(roots[i].gameState.checkers);
-                        Checker checker = createdNode.gameState.checkers[i];
-                        checker.X--;
-                        checker.Y--;
-                        createdNode.gameState.checkers[i] = checker;
-
-                        createdNode.gameState.Xer = roots[i].gameState.Xer;
-                        createdNode.gameState.gameFinished = roots[i].gameState.EvaluateVictory(createdNode.gameState);
-                        createdNode.gameState.XerVictory = roots[i].gameState.Xer;
-
-                        unvisitedNodes.Add((createdNode, i));
-                    }
-                    if (roots[i].gameState.checkers[i].CheckDownRight(checkerMarks))
-                    {
-                        MiniMaxNode<CheckersGS> createdNode = new MiniMaxNode<CheckersGS>(roots[i].gameState.BlankState);
-
-                        createdNode.gameState.checkers.AddRange(roots[i].gameState.checkers);
-                        Checker checker = createdNode.gameState.checkers[i];
-                        checker.X++;
-                        checker.Y--;
-                        createdNode.gameState.checkers[i] = checker;
-
-                        createdNode.gameState.Xer = roots[i].gameState.Xer;
-                        createdNode.gameState.gameFinished = roots[i].gameState.EvaluateVictory(createdNode.gameState);
-                        createdNode.gameState.XerVictory = roots[i].gameState.Xer;
-
-                        unvisitedNodes.Add((createdNode, i));
-                    }
+                foreach(CheckersGS state in states)
+                {
+                    MiniMaxNode<CheckersGS> miniMaxNode = new MiniMaxNode<CheckersGS>(state);
+                    unvisitedNodes.Add((miniMaxNode, i));
                 }
             }
 
             for (int i = roots.Count; i < carloNodes.Length; i++)
             {
+                //Picks random unvisited node
                 int rand = random.Next(0, unvisitedNodes.Count);
-                if(unvisitedNodes.Count == 0)
+                if (unvisitedNodes.Count == 0)
                 {
                     break;
                 }
                 (MiniMaxNode<CheckersGS> node, int parentIndex) currentNode = unvisitedNodes[rand];
                 unvisitedNodes.RemoveAt(rand);
                 CheckersGS currentState = currentNode.node.gameState.BlankState;
-                currentState.checkers.AddRange(currentNode.node.gameState.checkers);
+                //copy currentNode.node.gameState into currentState
+                currentState.marks = currentNode.node.gameState.marks;
 
-
-                int[,] checkerMarks = new int[8, 8];
-                foreach (Checker checker in currentState.checkers)
-                {
-                    checkerMarks[checker.X, checker.Y] = checker.Xer ? 1 : -1;
-                }
                 //Simulation
                 while (!currentState.gameFinished)
                 {
-                    //play random moves on currentState
-                    int randIndex = random.Next(0, currentState.checkers.Count);
-                    if (currentState.checkers[randIndex].Xer != currentState.Xer) { continue; }
+                    //Pick random moves until game Finished
+                    Checker root = null;
+                    Checker currentChecker = null;
+                    int count = 0;
 
-                    randIndex = random.Next(0, 4);
+                    int xMax = random.Next(0, 9);
+                    int yMax = random.Next(0, 9);
 
-                    if(randIndex == 0)
+                    for (int x = 0; x < xMax; x++)
                     {
-                        if (currentState.checkers[i].CheckUpLeft(checkerMarks))
+                        for (int y = 0; y < yMax; y++)
                         {
-                            Checker checker = currentState.checkers[i];
-                            checker.X--;
-                            checker.Y++;
-                            currentState.checkers[i] = checker;
-                            
-                            currentState.gameFinished = currentState.EvaluateVictory(currentState);
-                            currentState.XerVictory = roots[i].gameState.Xer;
-
-                            currentState.Xer = !currentState.Xer;
+                            if (currentState.marks[x, y] == (currentState.Xer ? 'x' : 'o') || currentState.marks[x, y] == (currentState.Xer ? 'X' : 'O'))
+                            {
+                                if (root == null)
+                                {
+                                    root = new Checker(x, y, currentState.marks[x, y]);
+                                    currentChecker = root;
+                                    count++;
+                                    continue;
+                                }
+                                currentChecker.next = new Checker(x, y, currentState.marks[x, y]);
+                                currentChecker = currentChecker.next;
+                                count++;
+                            }
                         }
                     }
-                    else if(randIndex == 1)
+                    if(root == null)
                     {
-                        if (currentState.checkers[i].CheckUpRight(checkerMarks))
-                        {
-                            Checker checker = currentState.checkers[i];
-                            checker.X++;
-                            checker.Y++;
-                            currentState.checkers[i] = checker;
-
-                            currentState.gameFinished = currentState.EvaluateVictory(currentState);
-                            currentState.XerVictory = roots[i].gameState.Xer;
-
-                            currentState.Xer = !currentState.Xer;
-                        }
+                        continue;
                     }
-                    else if(randIndex == 2)
+                    List<CheckersGS> states = new List<CheckersGS>();
+
+                    for (int tries = 0; tries < 5; tries++)
                     {
-                        if (currentState.checkers[i].CheckDownRight(checkerMarks))
+                        int currentX = currentChecker.x;
+                        int currentY = currentChecker.y;
+                        int move = random.Next(0, 4);
+                        //UpRight
+                        if (move == 0 && (!currentState.Xer || currentChecker.upgraded) && currentX + 1 < 8 && currentY + 1 < 8)
                         {
-                            Checker checker = currentState.checkers[i];
-                            checker.X++;
-                            checker.Y--;
-                            currentState.checkers[i] = checker;
-
-                            currentState.gameFinished = currentState.EvaluateVictory(currentState);
-                            currentState.XerVictory = roots[i].gameState.Xer;
-
-                            currentState.Xer = !currentState.Xer;
+                            states.AddRange(currentState.GetMove(currentChecker, currentState.marks, currentX, currentY, currentX + 1, currentY + 1));
+                            break;
                         }
-                    }
-                    else
-                    {
-                        if (currentState.checkers[i].CheckDownLeft(checkerMarks))
+
+                        //UpLeft
+                        else if (move == 1 && (!currentState.Xer || currentChecker.upgraded) && currentX - 1 >= 0 && currentY + 1 < 8)
                         {
-                            Checker checker = currentState.checkers[i];
-                            checker.X--;
-                            checker.Y--;
-                            currentState.checkers[i] = checker;
+                            states.AddRange(currentState.GetMove(currentChecker, currentState.marks, currentX, currentY, currentX - 1, currentY + 1));
+                            break;
+                        }
 
-                            currentState.gameFinished = currentState.EvaluateVictory(currentState);
-                            currentState.XerVictory = roots[i].gameState.Xer;
+                        //DownRight
+                        else if (move == 2 && (!currentState.Xer || currentChecker.upgraded) && currentX + 1 < 8 && currentY - 1 >= 0)
+                        {
+                            states.AddRange(currentState.GetMove(currentChecker, currentState.marks, currentX, currentY, currentX + 1, currentY - 1));
+                            break;
+                        }
 
-                            currentState.Xer = !currentState.Xer;
+                        //DownLeft
+                        else if (move == 3 && (!currentState.Xer || currentChecker.upgraded) && currentX - 1 >= 0 && currentY - 1 >= 0)
+                        {
+                            states.AddRange(currentState.GetMove(currentChecker, currentState.marks, currentX, currentY, currentX - 1, currentY - 1));
+                        }
+
+                        if (states.Count > 0)
+                        {
+                            int index = random.Next(0, states.Count);
+                            currentState = states[index];
+                            break;
                         }
                     }
                 }
-
 
                 //Fake Nodes
-                checkerMarks = new int[8, 8];
-                foreach (Checker checker in currentNode.node.gameState.checkers)
+
+                //For each possible move, create a MiniMaxNode, copy currentNode.node.gameState into createdNode, play a game, and add to unvisited.
+                Checker Froot = null;
+                Checker FcurrentChecker = null;
+
+                for (int x = 0; x < 8; x++)
                 {
-                    checkerMarks[checker.X, checker.Y] = checker.Xer ? 1 : -1;
-                }
-                for (int c = 0; c < currentNode.node.gameState.checkers.Count; c++)
-                {
-                    if (currentNode.node.gameState.checkers[c].Xer != currentNode.node.gameState.Xer) continue;
-
-                    MiniMaxNode<CheckersGS> createdNode = new MiniMaxNode<CheckersGS>(currentState.BlankState);
-                    createdNode.gameState.checkers.AddRange(currentNode.node.gameState.checkers);
-
-                    if (roots[i].gameState.checkers[i].CheckUpLeft(checkerMarks))
+                    for (int y = 0; y < 8; y++)
                     {
-                        Checker checker = createdNode.gameState.checkers[c];
-                        checker.X--;
-                        checker.Y++;
-                        createdNode.gameState.checkers[i] = checker;
-
-                        createdNode.gameState.Xer = !currentNode.node.gameState.Xer;
-
-                        createdNode.gameState.gameFinished = createdNode.gameState.EvaluateVictory(createdNode.gameState);
-                        createdNode.gameState.XerVictory = createdNode.gameState.Xer;
-
-                        unvisitedNodes.Add((createdNode, currentNode.parentIndex));
-                    }
-                    if (roots[i].gameState.checkers[i].CheckUpRight(checkerMarks))
-                    {
-                        Checker checker = createdNode.gameState.checkers[c];
-                        checker.X++;
-                        checker.Y++;
-                        createdNode.gameState.checkers[i] = checker;
-
-                        createdNode.gameState.Xer = !currentNode.node.gameState.Xer;
-
-                        createdNode.gameState.gameFinished = createdNode.gameState.EvaluateVictory(createdNode.gameState);
-                        createdNode.gameState.XerVictory = createdNode.gameState.Xer;
-
-                        unvisitedNodes.Add((createdNode, currentNode.parentIndex));
-                    }
-                    if (roots[i].gameState.checkers[i].CheckDownRight(checkerMarks))
-                    {
-                        Checker checker = createdNode.gameState.checkers[c];
-                        checker.X++;
-                        checker.Y--;
-                        createdNode.gameState.checkers[i] = checker;
-
-                        createdNode.gameState.Xer = !currentNode.node.gameState.Xer;
-
-                        createdNode.gameState.gameFinished = createdNode.gameState.EvaluateVictory(createdNode.gameState);
-                        createdNode.gameState.XerVictory = createdNode.gameState.Xer;
-
-                        unvisitedNodes.Add((createdNode, currentNode.parentIndex));
-                    }
-                    if (roots[i].gameState.checkers[i].CheckDownLeft(checkerMarks))
-                    {
-                        Checker checker = createdNode.gameState.checkers[c];
-                        checker.X--;
-                        checker.Y--;
-                        createdNode.gameState.checkers[i] = checker;
-
-                        createdNode.gameState.Xer = !currentNode.node.gameState.Xer;
-
-                        createdNode.gameState.gameFinished = createdNode.gameState.EvaluateVictory(createdNode.gameState);
-                        createdNode.gameState.XerVictory = createdNode.gameState.Xer;
-
-                        unvisitedNodes.Add((createdNode, currentNode.parentIndex));
+                        if (currentNode.node.gameState.marks[x, y] == (currentNode.node.gameState.Xer ? 'x' : 'o') || currentNode.node.gameState.marks[x, y] == (currentNode.node.gameState.Xer ? 'X' : 'O'))
+                        {
+                            if (Froot == null)
+                            {
+                                Froot = new Checker(x, y, currentNode.node.gameState.marks[x, y]);
+                                FcurrentChecker = Froot;
+                                continue;
+                            }
+                            FcurrentChecker.next = new Checker(x, y, currentNode.node.gameState.marks[x, y]);
+                            FcurrentChecker = FcurrentChecker.next;
+                        }
                     }
                 }
 
+                FcurrentChecker = Froot;
 
+                List<CheckersGS> Fstates = new List<CheckersGS>();
+
+                for (; FcurrentChecker != null; FcurrentChecker = FcurrentChecker.next)
+                {
+                    Fstates.AddRange(currentNode.node.gameState.GetMoves(currentNode.node.gameState.Xer, FcurrentChecker));
+                    for(int l = 0; l < Fstates.Count; l++)
+                    {
+                        unvisitedNodes.Add((new MiniMaxNode<CheckersGS>(Fstates[l]), currentNode.parentIndex));
+                        Fstates.RemoveAt(l);
+                        l--;
+                    }
+                }
+
+                //Calculate Wins/Losses/Ties
                 int winCount = currentState.Tie ? 0 : currentState.XerVictory ? 1 : -1;
                 carloNodes[i] = (winCount, currentNode.node);
                 carloNodes[currentNode.parentIndex].wins += winCount;

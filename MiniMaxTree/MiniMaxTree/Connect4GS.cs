@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MiniMaxTree
 {
-    unsafe struct CharStoreStruct
+    unsafe struct C4Marks
     {
         fixed char data[7 * 6];
 
@@ -32,7 +32,7 @@ namespace MiniMaxTree
             }
         }
 
-        public CharStoreStruct marks = new CharStoreStruct();
+        public C4Marks marks = new C4Marks();
         public bool XerVictory = false;
         public bool Tie = false;
         public bool Xer = false;
