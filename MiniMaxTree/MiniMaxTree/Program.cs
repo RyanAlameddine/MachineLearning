@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime;
 using System.Runtime.CompilerServices;
@@ -26,10 +27,79 @@ namespace MiniMaxTree
         static void Main(string[] args)
         {
             List<Linq> LinqedList = Enumerable.Range(0, 100).Select(x => (Linq)x).ToList();
-            Chx();
+            ChxMonteCarloTrain();
 
             Console.ReadKey();
         }
+
+        static void ChxMonteCarloTrain()
+        {
+            Random rand = new Random();
+            string[] lines = new string[1000];
+            for(int i = 0; i < 2; i++)
+            {
+                CheckersGS gs = new CheckersGS();
+                gs.Xer = rand.Next(0, 2) == 1;
+                int xCount = rand.Next(1, 13);
+                int oCount = rand.Next(1, 13);
+                for (int x = 0; x < xCount; x++)
+                {
+                    int f = rand.Next(0, 32) * 2;
+                    if (f % 16 < 8)
+                    {
+                        f++;
+                    }
+                    if (gs.marks[f] != '\0')
+                    {
+                        x--;
+                        continue;
+                    }
+                    else
+                    {
+                        if(rand.Next(0, 10) == 0)
+                        {
+                            gs.marks[f] = 'X';
+                        }
+                        else
+                        {
+                            gs.marks[f] = 'x';
+                        }
+                    }
+                }
+
+                for (int o = 0; o < oCount; o++)
+                {
+                    int f = rand.Next(0, 32) * 2;
+                    if(f % 16 < 8)
+                    {
+                        f++;
+                    }
+                    if (gs.marks[f] != '\0')
+                    {
+                        o--;
+                        continue;
+                    }
+                    else
+                    {
+                        if (rand.Next(0, 10) == 0)
+                        {
+                            gs.marks[f] = 'O';
+                        }
+                        else
+                        {
+                            gs.marks[f] = 'o';
+                        }
+                    }
+                }
+                var node = new MiniMaxNode<CheckersGS>(gs);
+                Console.SetCursorPosition(0, 0);
+                gs.ConsoleWrite();
+                CheckersGM.MonteCarlo(node, gs.Xer);
+                lines[i] = node.Value + ":" + gs.ToCompact();
+            }
+            File.AppendAllLines(Path.Combine(Directory.GetCurrentDirectory(), "CHX.txt"), lines);
+        }
+
 
         static void C4()
         {
@@ -52,7 +122,7 @@ namespace MiniMaxTree
                 currentC4GS.marks[x, y] = 'O';
                 List<MiniMaxNode<Connect4GS>> leafList = new List<MiniMaxNode<Connect4GS>>();
                 
-                manager.GenerateTree(C4Tree.Root, true, 4);
+                manager.GenerateTree(C4Tree.Root, true, 2);
                 manager.AlphaBetaMonteCarlo(C4Tree.Root, true);
                 manager.CalculateTree(C4Tree.Root, true);
 
@@ -154,6 +224,7 @@ namespace MiniMaxTree
                 List<MiniMaxNode<CheckersGS>> leafList = new List<MiniMaxNode<CheckersGS>>();
 
                 manager.GenerateTree(C4Tree.Root, true, 2);
+                Console.Clear();
                 manager.AlphaBetaMonteCarlo(C4Tree.Root, true);
                 manager.CalculateTree(C4Tree.Root, true);
 

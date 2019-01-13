@@ -20,6 +20,18 @@ namespace MiniMaxTree
                 data[(x * 8) + y] = value;
             }
         }
+
+        public char this[int i]
+        {
+            get
+            {
+                return data[i];
+            }
+            set
+            {
+                data[i] = value;
+            }
+        }
     }
 
     class Checker
@@ -136,31 +148,31 @@ namespace MiniMaxTree
             //UpRight
             if ((!Xer || checker.upgraded) && currentX + 1 < 8 && currentY + 1 < 8)
             {
-                states.AddRange(GetMove(checker, marks, currentX, currentY, currentX + 1, currentY + 1));
+                states.AddRange(GetMove(checker, marks, currentX, currentY, currentX + 1, currentY + 1, Xer));
             }
 
             //UpLeft
             if ((!Xer || checker.upgraded) && currentX - 1 >= 0 && currentY + 1 < 8)
             {
-                states.AddRange(GetMove(checker, marks, currentX, currentY, currentX - 1, currentY + 1));
+                states.AddRange(GetMove(checker, marks, currentX, currentY, currentX - 1, currentY + 1, Xer));
             }
 
             //DownRight
             if ((Xer || checker.upgraded) && currentX + 1 < 8 && currentY - 1 >= 0)
             {
-                states.AddRange(GetMove(checker, marks, currentX, currentY, currentX + 1, currentY - 1));
+                states.AddRange(GetMove(checker, marks, currentX, currentY, currentX + 1, currentY - 1, Xer));
             }
 
             //DownLeft
             if ((Xer || checker.upgraded) && currentX - 1 >= 0 && currentY - 1 >= 0)
             {
-                states.AddRange(GetMove(checker, marks, currentX, currentY, currentX - 1, currentY - 1));
+                states.AddRange(GetMove(checker, marks, currentX, currentY, currentX - 1, currentY - 1, Xer));
             }
 
             return states;
         }
 
-        public List<CheckersGS> GetMove(Checker checker, ChxMarks chxMrkx, int currentX, int currentY, int newX, int newY)
+        public List<CheckersGS> GetMove(Checker checker, ChxMarks chxMrkx, int currentX, int currentY, int newX, int newY, bool isXer)
         {
             List<CheckersGS> states = new List<CheckersGS>();
 
@@ -178,11 +190,10 @@ namespace MiniMaxTree
                 //copy marks
                 state.marks = chxMrkx;
 
-                state.Xer = Xer;
+                state.Xer = isXer;
                 state.marks[newX, newY] = state.marks[currentX, currentY];
                 state.marks[currentX, currentY] = '\0';
                 state.gameFinished = EvaluateVictory(state, newX, newY);
-                state.XerVictory = Xer;
                 return states;
             }
 
@@ -206,38 +217,37 @@ namespace MiniMaxTree
                 //copy marks
                 state.marks = chxMrkx;
 
-                state.Xer = Xer;
+                state.Xer = isXer;
                 state.marks[doubleX, doubleY] = state.marks[currentX, currentY];
                 state.marks[currentX, currentY] = '\0';
                 state.marks[newX, newY] = '\0';
                 state.gameFinished = EvaluateVictory(state, newX, newY);
-                state.XerVictory = Xer;
 
 
                 currentX = doubleX;
                 currentY = doubleY;
                 //UpRight
-                if ((!Xer || checker.upgraded) && currentX + 1 < 8 && currentY + 1 < 8)
+                if ((!isXer || checker.upgraded) && currentX + 1 < 8 && currentY + 1 < 8)
                 {
-                    states.AddRange(GetMove(checker, state.marks, currentX, currentY, currentX + 1, currentY + 1));
+                    states.AddRange(GetMove(checker, state.marks, currentX, currentY, currentX + 1, currentY + 1, isXer));
                 }
 
                 //UpLeft
-                if ((!Xer || checker.upgraded) && currentX - 1 >= 0 && currentY + 1 < 8)
+                if ((!isXer || checker.upgraded) && currentX - 1 >= 0 && currentY + 1 < 8)
                 {
-                    states.AddRange(GetMove(checker, state.marks, currentX, currentY, currentX - 1, currentY + 1));
+                    states.AddRange(GetMove(checker, state.marks, currentX, currentY, currentX - 1, currentY + 1, isXer));
                 }
 
                 //DownRight
-                if ((!Xer || checker.upgraded) && currentX + 1 < 8 && currentY - 1 >= 0)
+                if ((isXer || checker.upgraded) && currentX + 1 < 8 && currentY - 1 >= 0)
                 {
-                    states.AddRange(GetMove(checker, state.marks, currentX, currentY, currentX + 1, currentY - 1));
+                    states.AddRange(GetMove(checker, state.marks, currentX, currentY, currentX + 1, currentY - 1, isXer));
                 }
 
                 //DownLeft
-                if ((!Xer || checker.upgraded) && currentX - 1 >= 0 && currentY - 1 >= 0)
+                if ((isXer || checker.upgraded) && currentX - 1 >= 0 && currentY - 1 >= 0)
                 {
-                    states.AddRange(GetMove(checker, state.marks, currentX, currentY, currentX - 1, currentY - 1));
+                    states.AddRange(GetMove(checker, state.marks, currentX, currentY, currentX - 1, currentY - 1, isXer));
                 }
 
                 return states;
@@ -272,8 +282,16 @@ namespace MiniMaxTree
                 }
             }
 
-            if(xCount == 0 || oCount == 0)
+            if(xCount == 0)
             {
+                XerVictory = true;
+                gameFinished = true;
+                return true;
+            }
+            if(oCount == 0)
+            {
+                XerVictory = false;
+                gameFinished = true;
                 return true;
             }
             return false;
@@ -287,10 +305,31 @@ namespace MiniMaxTree
             {
                 for (int j = 0; j < 8; j++)
                 {
-                    if (marks[i, j] == '\0') continue;
+                    if (marks[i, j] == '\0') stringBuilder.Append(' ');
                     stringBuilder.Append(marks[i, j]);
                 }
                 stringBuilder.Append('\n');
+            }
+            return stringBuilder.ToString();
+        }
+        public string ToCompact()
+        {
+           FIX THIS
+            StringBuilder stringBuilder = new StringBuilder();
+
+            for (int y = 0; y < 8; y++)
+            {
+                for (int x = 1; x < 8; x++)
+                {
+                    if (marks[x, y] == '\0') stringBuilder.Append(' ');
+                    stringBuilder.Append(marks[x, y]);
+                }
+                y++;
+                for (int x = 0; x < 8; x++)
+                {
+                    if (marks[x, y] == '\0') stringBuilder.Append(' ');
+                    stringBuilder.Append(marks[x, y]);
+                }
             }
             return stringBuilder.ToString();
         }

@@ -98,7 +98,7 @@ namespace MiniMaxTree
         private double AlphaBetaMonteCarlo(MiniMaxNode<CheckersGS> root, bool maximizer, double alpha, double beta)
         {
             loops++;
-            if (loops > 20)
+            if (loops > 1)
             {
                 Console.SetCursorPosition(0, 0);
                 root.gameState.ConsoleWrite(true);
@@ -157,7 +157,7 @@ namespace MiniMaxTree
             return second;
         }
 
-        public void MonteCarlo(MiniMaxNode<CheckersGS> leaf, bool maximizer)
+        public static void MonteCarlo(MiniMaxNode<CheckersGS> leaf, bool maximizer)
         {
             if (leaf.gameState.gameFinished)
             {
@@ -242,6 +242,8 @@ namespace MiniMaxTree
                 currentState.marks = currentNode.node.gameState.marks;
 
                 //Simulation
+                int noChangeCount = 0;
+                int simCount = 0;
                 while (!currentState.gameFinished)
                 {
                     //Pick random moves until game Finished
@@ -249,8 +251,8 @@ namespace MiniMaxTree
                     Checker currentChecker = null;
                     int count = 0;
 
-                    int xMax = random.Next(0, 9);
-                    int yMax = random.Next(0, 9);
+                    int xMax = random.Next(1, 9);
+                    int yMax = random.Next(1, 9);
 
                     for (int x = 0; x < xMax; x++)
                     {
@@ -273,47 +275,56 @@ namespace MiniMaxTree
                     }
                     if(root == null)
                     {
+                        simCount++;
+                        if(simCount > 1000)
+                        {
+                            currentState.EvaluateVictory(currentState, 0, 0);
+                        }
                         continue;
                     }
                     List<CheckersGS> states = new List<CheckersGS>();
 
-                    for (int tries = 0; tries < 5; tries++)
+                    int currentX = currentChecker.x;
+                    int currentY = currentChecker.y;
+                    //UpRight
+                    if ((!currentState.Xer || currentChecker.upgraded) && currentX + 1 < 8 && currentY + 1 < 8)
                     {
-                        int currentX = currentChecker.x;
-                        int currentY = currentChecker.y;
-                        int move = random.Next(0, 4);
-                        //UpRight
-                        if (move == 0 && (!currentState.Xer || currentChecker.upgraded) && currentX + 1 < 8 && currentY + 1 < 8)
-                        {
-                            states.AddRange(currentState.GetMove(currentChecker, currentState.marks, currentX, currentY, currentX + 1, currentY + 1));
-                            break;
-                        }
+                        states.AddRange(currentState.GetMove(currentChecker, currentState.marks, currentX, currentY, currentX + 1, currentY + 1, !currentState.Xer));
+                    }
 
-                        //UpLeft
-                        else if (move == 1 && (!currentState.Xer || currentChecker.upgraded) && currentX - 1 >= 0 && currentY + 1 < 8)
-                        {
-                            states.AddRange(currentState.GetMove(currentChecker, currentState.marks, currentX, currentY, currentX - 1, currentY + 1));
-                            break;
-                        }
+                    //UpLeft
+                    if ((!currentState.Xer || currentChecker.upgraded) && currentX - 1 >= 0 && currentY + 1 < 8)
+                    {
+                        states.AddRange(currentState.GetMove(currentChecker, currentState.marks, currentX, currentY, currentX - 1, currentY + 1, !currentState.Xer));
+                    }
 
-                        //DownRight
-                        else if (move == 2 && (!currentState.Xer || currentChecker.upgraded) && currentX + 1 < 8 && currentY - 1 >= 0)
-                        {
-                            states.AddRange(currentState.GetMove(currentChecker, currentState.marks, currentX, currentY, currentX + 1, currentY - 1));
-                            break;
-                        }
+                    //DownRight
+                    if ((currentState.Xer || currentChecker.upgraded) && currentX + 1 < 8 && currentY - 1 >= 0)
+                    {
+                        states.AddRange(currentState.GetMove(currentChecker, currentState.marks, currentX, currentY, currentX + 1, currentY - 1, !currentState.Xer));
+                    }
 
-                        //DownLeft
-                        else if (move == 3 && (!currentState.Xer || currentChecker.upgraded) && currentX - 1 >= 0 && currentY - 1 >= 0)
-                        {
-                            states.AddRange(currentState.GetMove(currentChecker, currentState.marks, currentX, currentY, currentX - 1, currentY - 1));
-                        }
+                    //DownLeft
+                    if ((currentState.Xer || currentChecker.upgraded) && currentX - 1 >= 0 && currentY - 1 >= 0)
+                    {
+                        states.AddRange(currentState.GetMove(currentChecker, currentState.marks, currentX, currentY, currentX - 1, currentY - 1, !currentState.Xer));
+                    }
 
-                        if (states.Count > 0)
+                    if (states.Count > 0)
+                    {
+                        int index = random.Next(0, states.Count);
+                        currentState = states[index];
+                        noChangeCount = 0;
+                        simCount++;
+                        continue;
+                    }
+                    else
+                    {
+                        noChangeCount++;
+                        if(noChangeCount > 1000)
                         {
-                            int index = random.Next(0, states.Count);
-                            currentState = states[index];
-                            break;
+                            currentState.gameFinished = true;
+                            currentState.Tie = true;
                         }
                     }
                 }
