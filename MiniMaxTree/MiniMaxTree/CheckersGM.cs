@@ -282,6 +282,8 @@ namespace MiniMaxTree
                         }
                         continue;
                     }
+                    //Console.SetCursorPosition(0, 0);
+                    //currentState.ConsoleWrite();
                     List<CheckersGS> states = new List<CheckersGS>();
 
                     int currentX = currentChecker.x;
@@ -321,10 +323,10 @@ namespace MiniMaxTree
                     else
                     {
                         noChangeCount++;
-                        if(noChangeCount > 1000)
+                        if(noChangeCount > 100)
                         {
                             currentState.gameFinished = true;
-                            currentState.Tie = true;
+                            currentState.XerVictory = !currentState.Xer;
                         }
                     }
                 }
@@ -369,8 +371,10 @@ namespace MiniMaxTree
                 }
 
                 //Calculate Wins/Losses/Ties
+                currentState.XerVictory = !currentState.Xer;
                 int winCount = currentState.Tie ? 0 : currentState.XerVictory ? 1 : -1;
                 carloNodes[i] = (winCount, currentNode.node);
+                Console.SetCursorPosition(0, 0);
                 carloNodes[currentNode.parentIndex].wins += winCount;
             }
 

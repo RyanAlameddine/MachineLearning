@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace NeuralNetwork
 {
@@ -131,43 +135,42 @@ namespace NeuralNetwork
             #endregion
 
             #region Backprop
-            /*
-            NeuralNetwork neuralNetwork = new NeuralNetwork(6, new IActivation[][]
+
+            Chx chx = new Chx(Path.Combine(@"\\GMRDC1\Folder Redirection\Ryan.Alameddine\Documents\Visual Studio 2017\Projects\NeuralNet\MiniMaxTree\MiniMaxTree\bin\Debug\netcoreapp2.1", "CHX.txt"));
+
+            NeuralNetwork neuralNetwork = new NeuralNetwork(32, new IActivation[][]
                 {
-                    Enumerable.Repeat(sigmoid, 10).ToArray(),
+                    Enumerable.Repeat(sigmoid, 100).ToArray(),
+                    Enumerable.Repeat(sigmoid, 100).ToArray(),
                     new IActivation[] { sigmoid }
                 });
             neuralNetwork.Randomize(random);
 
             StringBuilder topValues = new StringBuilder();
-            while (topValues.ToString() != "{ 1.00 1.00 1.00 0.00 0.00 1.00 1.00 1.00 0.00 0.00 0.00 1.00 1.00 0.00 0.00 0.00 0.00 1.00 1.00 0.00 1.00 0.00 0.00 1.00 }")
+            while (true)
             {
                 Console.WriteLine($"Epochs: {epochs}");
-                topValues = new StringBuilder("{ ");
                 epochs++;
 
-                if (epochs >= 100000)
+                if (Console.KeyAvailable)
                 {
-                    epochs = 0;
-                    neuralNetwork.Randomize(random);
+                    if (Console.ReadKey().KeyChar == 'x')
+                    {
+                        var desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                        neuralNetwork = JsonConvert.DeserializeObject<NeuralNetwork>(File.ReadAllText(Path.Combine(desktop, "trained.json")), new JsonSerializerSettings() { ContractResolver = new Resolver() } ); FIX THIS
+                        File.WriteAllLines(Path.Combine(desktop, "trained.json"), new string[] { JsonConvert.SerializeObject(neuralNetwork, Formatting.Indented , new JsonSerializerSettings() { ContractResolver = new Resolver() }) });
+                        //break;
+                    }
                 }
 
-                neuralNetwork.Train(inputs, outputs, .2);
-                for (int i = 0; i < inputs.Length; i++)
-                {
-                    topValues.Append($"{neuralNetwork.Compute(inputs[i])[0]:0.00}");
-                    topValues.Append(' ');
-                }
-
-                topValues.Append($"}}");
-                Console.SetCursorPosition(0, 0);
-                Console.WriteLine("{ 1.00 1.00 1.00 0.00 0.00 1.00 1.00 1.00 0.00 0.00 0.00 1.00 1.00 0.00 0.00 0.00 0.00 1.00 1.00 0.00 1.00 0.00 0.00 1.00 }");
-                Console.WriteLine(topValues.ToString());
+                Console.WriteLine(neuralNetwork.Train(chx.Spaces, chx.Outputs, 1, .5, 0.03)/chx.Spaces.Length);
             }
-            */
+            Console.ReadKey();
+            
             #endregion
 
-            MNIST mnist = new MNIST();
+            #region MNIST
+            /*MNIST mnist = new MNIST();
 
             // 784,400,10
             NeuralNetwork neuralNetwork = new NeuralNetwork(784, new IActivation[][]
@@ -185,7 +188,22 @@ namespace NeuralNetwork
                 Console.WriteLine($"{mae}");
             }
             while (mae > 0);
-            ;
+            ;*/
+            #endregion MNIST
         }
+    }
+}
+
+public class Resolver : Newtonsoft.Json.Serialization.DefaultContractResolver
+{
+    protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+    {
+        var props = type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                        .Select(p => base.CreateProperty(p, memberSerialization))
+                    .Union(type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                               .Select(f => base.CreateProperty(f, memberSerialization)))
+                    .ToList();
+        props.ForEach(p => { p.Writable = true; p.Readable = true; });
+        return props;
     }
 }

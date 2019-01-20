@@ -35,8 +35,8 @@ namespace MiniMaxTree
         static void ChxMonteCarloTrain()
         {
             Random rand = new Random();
-            string[] lines = new string[1000];
-            for(int i = 0; i < 2; i++)
+            string[] lines = new string[150];
+            for(int i = 0; i < lines.Length; i++)
             {
                 CheckersGS gs = new CheckersGS();
                 gs.Xer = rand.Next(0, 2) == 1;
@@ -94,10 +94,11 @@ namespace MiniMaxTree
                 var node = new MiniMaxNode<CheckersGS>(gs);
                 Console.SetCursorPosition(0, 0);
                 gs.ConsoleWrite();
+                Console.WriteLine(i);
                 CheckersGM.MonteCarlo(node, gs.Xer);
                 lines[i] = node.Value + ":" + gs.ToCompact();
             }
-            File.AppendAllLines(Path.Combine(Directory.GetCurrentDirectory(), "CHX.txt"), lines);
+            File.AppendAllLines(Path.Combine(@"\\GMRDC1\Folder Redirection\Ryan.Alameddine\Documents\Visual Studio 2017\Projects\NeuralNet\MiniMaxTree\MiniMaxTree\bin\Debug\netcoreapp2.1", "CHX.txt"), lines);
         }
 
 

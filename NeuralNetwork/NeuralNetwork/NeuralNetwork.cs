@@ -10,6 +10,11 @@ namespace NeuralNetwork
         Layer[] layers;
         public double[] Outputs => layers[layers.Length - 1].Outputs;
 
+        public NeuralNetwork()
+        {
+
+        }
+
         public NeuralNetwork(int inputCount, IActivation[][] neurons)
         {
             layers = new Layer[neurons.Length];
@@ -20,9 +25,9 @@ namespace NeuralNetwork
             }
         }
 
-        public double[] Compute(double[] inputs)
+        public ReadOnlySpan<double> Compute(ReadOnlySpan<double> inputs)
         {
-            double[] outputs = inputs;
+            ReadOnlySpan<double> outputs = inputs;
             for (int i = 0; i < layers.Length; i++)
             {
                 outputs = layers[i].Compute(outputs);
@@ -97,12 +102,18 @@ namespace NeuralNetwork
             double sumError = 0;
             for (int i = 0; i < inputs.Length/batchSize; i++)
             {
-                sumError += Train(inputs.Skip(i * batchSize).Take(batchSize).ToArray(), desiredOutputs.Skip(i * batchSize).Take(batchSize).ToArray(), learningRate, momentum);
+                ReadOnlySpan<double[]> spanInputs = inputs;
+                spanInputs = spanInputs.Slice(i * batchSize, batchSize);
+
+                ReadOnlySpan<double[]> spanOutputs = desiredOutputs;
+                spanOutputs = spanOutputs.Slice(i * batchSize, batchSize);
+
+                sumError += Train(spanInputs, spanOutputs, learningRate, momentum);
             }
             return sumError;
         }
 
-        public double Train(double[][] inputs, double[][] desiredOutputs, double learningRate = 1, double momentum = 0.5)
+        public double Train(ReadOnlySpan<double[]> inputs, ReadOnlySpan<double[]> desiredOutputs, double learningRate = 1, double momentum = 0.5)
         {
             ClearUpdates();
             double sumError = 0;

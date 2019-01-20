@@ -22,6 +22,7 @@ namespace NeuralNetwork
         //    }
         //}
 
+        public Layer() { }
         public Layer(int inputCount, IActivation[] activations)
         {
             Neurons = new Neuron[activations.Length];
@@ -39,7 +40,7 @@ namespace NeuralNetwork
             }
         }
 
-        public double[] Compute(double[] inputs)
+        public ReadOnlySpan<double> Compute(ReadOnlySpan<double> inputs)
         {
             double[] outputs = new double[Neurons.Length];
             for (int i = 0; i < Neurons.Length; i++)

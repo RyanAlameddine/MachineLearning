@@ -19,6 +19,7 @@ namespace NeuralNetwork
         public double[] PreviousWeightsUpdate;
         public double PreviousBiasUpdate = 0;
 
+        public Neuron() { }
         public Neuron(int inputCount, IActivation activation)
         {
             this.activation = activation;
@@ -36,7 +37,7 @@ namespace NeuralNetwork
             Bias = random.NextDouble(activation.Min, activation.Max);
         }
 
-        public double Compute(params double[] inputs)
+        public double Compute(ReadOnlySpan<double> inputs)
         {
             double output = 0;
             for (int i = 0; i < inputs.Length; i++)

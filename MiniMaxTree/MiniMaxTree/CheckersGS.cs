@@ -65,6 +65,7 @@ namespace MiniMaxTree
         public bool XerVictory = false;
         public bool Tie = false;
         public bool Xer = false;
+        public bool doubleJ;
 
         public CheckersGS()
         {
@@ -213,7 +214,9 @@ namespace MiniMaxTree
             else
             {
                 CheckersGS state = new CheckersGS();
+                state.doubleJ = true;
                 states.Add(state);
+                doubleJ = true;
                 //copy marks
                 state.marks = chxMrkx;
 
@@ -226,6 +229,7 @@ namespace MiniMaxTree
 
                 currentX = doubleX;
                 currentY = doubleY;
+                isXer = !isXer;
                 //UpRight
                 if ((!isXer || checker.upgraded) && currentX + 1 < 8 && currentY + 1 < 8)
                 {
@@ -248,6 +252,15 @@ namespace MiniMaxTree
                 if ((isXer || checker.upgraded) && currentX - 1 >= 0 && currentY - 1 >= 0)
                 {
                     states.AddRange(GetMove(checker, state.marks, currentX, currentY, currentX - 1, currentY - 1, isXer));
+                }
+
+                for(int i = 0; i < states.Count; i++)
+                {
+                    if (!states[i].doubleJ)
+                    {
+                        states.RemoveAt(i);
+                        i--;
+                    }
                 }
 
                 return states;
@@ -284,13 +297,13 @@ namespace MiniMaxTree
 
             if(xCount == 0)
             {
-                XerVictory = true;
+                XerVictory = false;
                 gameFinished = true;
                 return true;
             }
             if(oCount == 0)
             {
-                XerVictory = false;
+                XerVictory = true;
                 gameFinished = true;
                 return true;
             }
@@ -314,20 +327,27 @@ namespace MiniMaxTree
         }
         public string ToCompact()
         {
-           FIX THIS
             StringBuilder stringBuilder = new StringBuilder();
 
             for (int y = 0; y < 8; y++)
             {
-                for (int x = 1; x < 8; x++)
+                for (int x = 1; x < 8; x += 2)
                 {
-                    if (marks[x, y] == '\0') stringBuilder.Append(' ');
+                    if (marks[x, y] == '\0')
+                    {
+                        stringBuilder.Append(' ');
+                        continue;
+                    }
                     stringBuilder.Append(marks[x, y]);
                 }
                 y++;
-                for (int x = 0; x < 8; x++)
+                for (int x = 0; x < 8; x += 2)
                 {
-                    if (marks[x, y] == '\0') stringBuilder.Append(' ');
+                    if (marks[x, y] == '\0')
+                    {
+                        stringBuilder.Append(' ');
+                        continue;
+                    }
                     stringBuilder.Append(marks[x, y]);
                 }
             }
