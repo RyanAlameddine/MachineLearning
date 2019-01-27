@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using NeuralNetwork;
 
 namespace MiniMaxTree
 {
     class CheckersGM : GameManager<CheckersGS>
     {
+        public NeuralNetwork.NeuralNetwork monteNet = null;
+
         public override void CalculateTree(MiniMaxNode<CheckersGS> root, bool maximizer)
         {
             if (root.children == null || root.children.Length == 0)
@@ -92,22 +95,20 @@ namespace MiniMaxTree
                 }
             }
         }
-
-        private int loops = 0;
-
+        
         private double AlphaBetaMonteCarlo(MiniMaxNode<CheckersGS> root, bool maximizer, double alpha, double beta)
         {
-            loops++;
-            if (loops > 1)
-            {
-                Console.SetCursorPosition(0, 0);
-                root.gameState.ConsoleWrite(true);
-                loops = 0;
-            }
             double bestVal = maximizer ? double.MinValue : double.MaxValue;
             if (root.children == null || root.children.Length == 0)
             {
-                MonteCarlo(root, maximizer);
+                if (monteNet == null)
+                {
+                    MonteCarlo(root, maximizer);
+                }
+                else
+                {
+                    root.Value = monteNet.Compute(root.gameState.toDoubles())[0];
+                }
                 return root.Value;
             }
             else
@@ -374,7 +375,6 @@ namespace MiniMaxTree
                 currentState.XerVictory = !currentState.Xer;
                 int winCount = currentState.Tie ? 0 : currentState.XerVictory ? 1 : -1;
                 carloNodes[i] = (winCount, currentNode.node);
-                Console.SetCursorPosition(0, 0);
                 carloNodes[currentNode.parentIndex].wins += winCount;
             }
 

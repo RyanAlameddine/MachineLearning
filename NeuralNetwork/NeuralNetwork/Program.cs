@@ -138,10 +138,10 @@ namespace NeuralNetwork
 
             Chx chx = new Chx(Path.Combine(@"\\GMRDC1\Folder Redirection\Ryan.Alameddine\Documents\Visual Studio 2017\Projects\NeuralNet\MiniMaxTree\MiniMaxTree\bin\Debug\netcoreapp2.1", "CHX.txt"));
 
-            NeuralNetwork neuralNetwork = new NeuralNetwork(32, new IActivation[][]
+            NeuralNetwork neuralNetwork = new NeuralNetwork(33, new IActivation[][]
                 {
-                    Enumerable.Repeat(sigmoid, 100).ToArray(),
-                    Enumerable.Repeat(sigmoid, 100).ToArray(),
+                    Enumerable.Repeat(sigmoid, 15).ToArray(),
+                    Enumerable.Repeat(sigmoid, 15).ToArray(),
                     new IActivation[] { sigmoid }
                 });
             neuralNetwork.Randomize(random);
@@ -149,21 +149,42 @@ namespace NeuralNetwork
             StringBuilder topValues = new StringBuilder();
             while (true)
             {
-                Console.WriteLine($"Epochs: {epochs}");
                 epochs++;
 
                 if (Console.KeyAvailable)
                 {
-                    if (Console.ReadKey().KeyChar == 'x')
+                    char keyChar = Console.ReadKey().KeyChar;
+                    if (keyChar == 's')
                     {
                         var desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                        neuralNetwork = JsonConvert.DeserializeObject<NeuralNetwork>(File.ReadAllText(Path.Combine(desktop, "trained.json")), new JsonSerializerSettings() { ContractResolver = new Resolver() } ); FIX THIS
+
                         File.WriteAllLines(Path.Combine(desktop, "trained.json"), new string[] { JsonConvert.SerializeObject(neuralNetwork, Formatting.Indented , new JsonSerializerSettings() { ContractResolver = new Resolver() }) });
-                        //break;
+                    }
+                    else if(keyChar == 'x')
+                    {
+                        var desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+                        var lines = File.ReadAllText(Path.Combine(desktop, "trained.json"));
+                        
+                        neuralNetwork = JsonConvert.DeserializeObject<NeuralNetwork>(lines, new JsonSerializerSettings() { ContractResolver = new Resolver() });
                     }
                 }
+                
+                double MAE = neuralNetwork.Train(chx.Spaces, chx.Outputs, 1, .0125, 0.2) / chx.Spaces.Length;
 
-                Console.WriteLine(neuralNetwork.Train(chx.Spaces, chx.Outputs, 1, .5, 0.03)/chx.Spaces.Length);
+                if (epochs % 1000 == 0)
+                {
+                    /*double sumError = 0;
+                    for (int i = 0; i < chx.TestSpaces.Length; i++)
+                    {
+                        neuralNetwork.Compute(chx.TestSpaces[i]);
+                        sumError += neuralNetwork.CalculateError(chx.TestOutputs[i]);
+                    }*/
+                    Console.WriteLine(MAE);
+                    Console.WriteLine(neuralNetwork.MAE(chx.TestSpaces, chx.TestOutputs));
+                    ///Console.WriteLine(sumError / chx.TestSpaces.Length);
+                    Console.WriteLine($"Epochs: {epochs}");
+                }
             }
             Console.ReadKey();
             

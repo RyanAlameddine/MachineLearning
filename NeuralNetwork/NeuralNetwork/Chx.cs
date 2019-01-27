@@ -11,27 +11,52 @@ namespace NeuralNetwork
         public double[][] Spaces;
         public double[][] Outputs;
 
+        public double[][] TestSpaces;
+        public double[][] TestOutputs;
+
         public Chx(string path)
         {
             string[] lines = File.ReadAllLines(path);
-            Outputs = new double[lines.Length][];
-            Spaces = new double[lines.Length][];
-            for(int i = 0; i < lines.Length; i++)
+            int count = (int) (lines.Length * .75);
+            int testCount = lines.Length - count;
+            Outputs    = new double[count][];
+            Spaces     = new double[count][];
+            TestOutputs= new double[testCount][];
+            TestSpaces = new double[testCount][];
+            for (int i = 0; i < count; i++)
             {
                 int x = 0;
                 for (; lines[i][x] != ':'; x++) ;
                 Outputs[i] = new double[] { (double.Parse(lines[i].Substring(0, x)) + 1000) / 2000 };
                 x++;
-                Spaces[i] = new double[32];
+                Spaces[i] = new double[33];
                 int length = lines[i].Length - x;
                 for (int j = 0; j < length; j++ )
                 {
                     char c = lines[i][x + j];
                     if (c == 'O') Spaces[i][j] = -2;
                     if (c == 'o') Spaces[i][j] = -1;
-                    if (c == ' ') Spaces[i][j] = 0;
-                    if (c == 'x') Spaces[i][j] = 1;
-                    if (c == 'X') Spaces[i][j] = 2;
+                    if (c == ' ') Spaces[i][j] =  0;
+                    if (c == 'x') Spaces[i][j] =  1;
+                    if (c == 'X') Spaces[i][j] =  2;
+                }
+            }
+            for(int i = 0; i < testCount; i++)
+            {
+                int x = 0;
+                for (; lines[i + testCount][x] != ':'; x++) ;
+                TestOutputs[i] = new double[] { (double.Parse(lines[i + testCount].Substring(0, x)) + 1000) / 2000 };
+                x++;
+                TestSpaces[i] = new double[33];
+                int length = lines[i + testCount].Length - x;
+                for (int j = 0; j < length; j++)
+                {
+                    char c = lines[i + testCount][x + j];
+                    if (c == 'O') TestSpaces[i][j] = -2;
+                    if (c == 'o') TestSpaces[i][j] = -1;
+                    if (c == ' ') TestSpaces[i][j] = 0;
+                    if (c == 'x') TestSpaces[i][j] = 1;
+                    if (c == 'X') TestSpaces[i][j] = 2;
                 }
             }
         }

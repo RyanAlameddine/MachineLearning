@@ -173,6 +173,24 @@ namespace MiniMaxTree
             return states;
         }
 
+        public double[] toDoubles()
+        {
+            double[] markdoubles = new double[33];
+            string compact = ToCompact();
+            
+            markdoubles = new double[33];
+            for (int j = 0; j < compact.Length; j++)
+            {
+                char c = compact[j];
+                if      (c == 'O') markdoubles[j] = -2;
+                else if (c == 'o') markdoubles[j] = -1;
+                else if (c == ' ') markdoubles[j] = 0;
+                else if (c == 'x') markdoubles[j] = 1;
+                else if (c == 'X') markdoubles[j] = 2;
+            }
+            return markdoubles;
+        }
+
         public List<CheckersGS> GetMove(Checker checker, ChxMarks chxMrkx, int currentX, int currentY, int newX, int newY, bool isXer)
         {
             List<CheckersGS> states = new List<CheckersGS>();
@@ -328,6 +346,14 @@ namespace MiniMaxTree
         public string ToCompact()
         {
             StringBuilder stringBuilder = new StringBuilder();
+            if (Xer)
+            {
+                stringBuilder.Append('x');
+            }
+            else
+            {
+                stringBuilder.Append('o');
+            }
 
             for (int y = 0; y < 8; y++)
             {

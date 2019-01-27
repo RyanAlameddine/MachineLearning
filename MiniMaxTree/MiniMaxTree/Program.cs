@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -34,71 +35,76 @@ namespace MiniMaxTree
 
         static void ChxMonteCarloTrain()
         {
-            Random rand = new Random();
-            string[] lines = new string[150];
-            for(int i = 0; i < lines.Length; i++)
-            {
-                CheckersGS gs = new CheckersGS();
-                gs.Xer = rand.Next(0, 2) == 1;
-                int xCount = rand.Next(1, 13);
-                int oCount = rand.Next(1, 13);
-                for (int x = 0; x < xCount; x++)
-                {
-                    int f = rand.Next(0, 32) * 2;
-                    if (f % 16 < 8)
-                    {
-                        f++;
-                    }
-                    if (gs.marks[f] != '\0')
-                    {
-                        x--;
-                        continue;
-                    }
-                    else
-                    {
-                        if(rand.Next(0, 10) == 0)
-                        {
-                            gs.marks[f] = 'X';
-                        }
-                        else
-                        {
-                            gs.marks[f] = 'x';
-                        }
-                    }
-                }
+            using (StreamWriter fs = new StreamWriter(Path.Combine(@"\\GMRDC1\Folder Redirection\Ryan.Alameddine\Documents\Visual Studio 2017\Projects\NeuralNet\MiniMaxTree\MiniMaxTree\bin\Debug\netcoreapp2.1", "CHX.txt"), true))
+            {               
 
-                for (int o = 0; o < oCount; o++)
+                Random rand = new Random();
+                for (int i = 0; i < 10000; i++)
                 {
-                    int f = rand.Next(0, 32) * 2;
-                    if(f % 16 < 8)
+                    CheckersGS gs = new CheckersGS();
+                    gs.Xer = rand.Next(0, 2) == 1;
+                    int xCount = rand.Next(1, 13);
+                    int oCount = rand.Next(1, 13);
+                    for (int x = 0; x < xCount; x++)
                     {
-                        f++;
-                    }
-                    if (gs.marks[f] != '\0')
-                    {
-                        o--;
-                        continue;
-                    }
-                    else
-                    {
-                        if (rand.Next(0, 10) == 0)
+                        int f = rand.Next(0, 32) * 2;
+                        if (f % 16 < 8)
                         {
-                            gs.marks[f] = 'O';
+                            f++;
+                        }
+                        if (gs.marks[f] != '\0')
+                        {
+                            x--;
+                            continue;
                         }
                         else
                         {
-                            gs.marks[f] = 'o';
+                            if (rand.Next(0, 10) == 0)
+                            {
+                                gs.marks[f] = 'X';
+                            }
+                            else
+                            {
+                                gs.marks[f] = 'x';
+                            }
                         }
                     }
+
+                    for (int o = 0; o < oCount; o++)
+                    {
+                        int f = rand.Next(0, 32) * 2;
+                        if (f % 16 < 8)
+                        {
+                            f++;
+                        }
+                        if (gs.marks[f] != '\0')
+                        {
+                            o--;
+                            continue;
+                        }
+                        else
+                        {
+                            if (rand.Next(0, 10) == 0)
+                            {
+                                gs.marks[f] = 'O';
+                            }
+                            else
+                            {
+                                gs.marks[f] = 'o';
+                            }
+                        }
+                    }
+                    var node = new MiniMaxNode<CheckersGS>(gs);
+                    Console.SetCursorPosition(0, 0);
+                    gs.ConsoleWrite();
+                    Console.WriteLine(i);
+                    CheckersGM.MonteCarlo(node, gs.Xer);
+                    string ln = node.Value + ":" + gs.ToCompact();
+                    fs.WriteLine(ln);
+                    fs.Flush();
                 }
-                var node = new MiniMaxNode<CheckersGS>(gs);
-                Console.SetCursorPosition(0, 0);
-                gs.ConsoleWrite();
-                Console.WriteLine(i);
-                CheckersGM.MonteCarlo(node, gs.Xer);
-                lines[i] = node.Value + ":" + gs.ToCompact();
             }
-            File.AppendAllLines(Path.Combine(@"\\GMRDC1\Folder Redirection\Ryan.Alameddine\Documents\Visual Studio 2017\Projects\NeuralNet\MiniMaxTree\MiniMaxTree\bin\Debug\netcoreapp2.1", "CHX.txt"), lines);
+            //File.AppendAllLines("", lines);
         }
 
 
@@ -177,6 +183,10 @@ namespace MiniMaxTree
             CheckersGM manager = new CheckersGM();
             MiniMaxTree<CheckersGS> C4Tree = new MiniMaxTree<CheckersGS>(manager, false, new CheckersGS(true));
 
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "trained.json");
+
+            manager.monteNet = JsonConvert.DeserializeObject<NeuralNetwork.NeuralNetwork>(File.ReadAllText(path));
+
             while (!C4Tree.Root.gameState.gameFinished)
             {
                 Console.SetCursorPosition(0, 0);
@@ -224,7 +234,7 @@ namespace MiniMaxTree
 
                 List<MiniMaxNode<CheckersGS>> leafList = new List<MiniMaxNode<CheckersGS>>();
 
-                manager.GenerateTree(C4Tree.Root, true, 2);
+                manager.GenerateTree(C4Tree.Root, true, 6);
                 Console.Clear();
                 manager.AlphaBetaMonteCarlo(C4Tree.Root, true);
                 manager.CalculateTree(C4Tree.Root, true);

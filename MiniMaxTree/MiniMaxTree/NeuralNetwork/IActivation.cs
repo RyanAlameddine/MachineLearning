@@ -23,12 +23,6 @@ namespace NeuralNetwork
                 case ActivationTypes.Sigmoid:
                     return new Sigmoid();
                     
-                case ActivationTypes.RELU:
-                    return new RELU();
-                    
-                case ActivationTypes.BinaryStep:
-                    return new BinaryStep();
-                    
                 default:
                     throw new InvalidOperationException("Unknown type");
                     

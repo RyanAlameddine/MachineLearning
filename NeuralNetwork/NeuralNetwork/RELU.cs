@@ -6,16 +6,18 @@ namespace NeuralNetwork
 {
     class RELU : IActivation
     {
-        public double Min => -0.5;
+        public override double Min => -0.5;
 
-        public double Max => 0.5;
+        public override double Max => 0.5;
 
-        public double Activate(double input)
+        public override ActivationTypes ActivationType => ActivationTypes.RELU;
+
+        public override double Activate(double input)
         {
             return input < 0 ? 0.01 * input : input;
         }
 
-        public double Derivative(double input)
+        public override double Derivative(double input)
         {
             return input < 0 ? 0.01 : 1;
         }
