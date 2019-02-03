@@ -28,7 +28,7 @@ namespace MiniMaxTree
         static void Main(string[] args)
         {
             List<Linq> LinqedList = Enumerable.Range(0, 100).Select(x => (Linq)x).ToList();
-            ChxMonteCarloTrain();
+            Chx();
 
             Console.ReadKey();
         }
@@ -129,7 +129,7 @@ namespace MiniMaxTree
                 currentC4GS.marks[x, y] = 'O';
                 List<MiniMaxNode<Connect4GS>> leafList = new List<MiniMaxNode<Connect4GS>>();
                 
-                manager.GenerateTree(C4Tree.Root, true, 2);
+                manager.GenerateTree(C4Tree.Root, true, 7);
                 manager.AlphaBetaMonteCarlo(C4Tree.Root, true);
                 manager.CalculateTree(C4Tree.Root, true);
 
@@ -245,6 +245,7 @@ namespace MiniMaxTree
                     for (; C4Tree.Root.children[i].Value != C4Tree.Root.Value; i++) ;
 
                     C4Tree.Root = C4Tree.Root.children[i];
+                    C4Tree.Root.pruned = false;
                 }
             }
             Console.Clear();

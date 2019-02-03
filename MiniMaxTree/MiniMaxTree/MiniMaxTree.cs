@@ -23,6 +23,7 @@ namespace MiniMaxTree
         public MiniMaxNode<T>[] children;
         public T gameState;
         public double Value;
+        public bool pruned = false;
 
         public MiniMaxNode(T gameState)
         {

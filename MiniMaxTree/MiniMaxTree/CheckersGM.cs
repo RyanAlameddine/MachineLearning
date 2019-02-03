@@ -17,7 +17,7 @@ namespace MiniMaxTree
                 {
                     if (root.gameState.Tie)
                     {
-                        root.Value = 0;
+                        root.Value = 0.5;
                     }
                     else if (root.gameState.XerVictory)
                     {
@@ -36,6 +36,10 @@ namespace MiniMaxTree
             foreach (MiniMaxNode<CheckersGS> child in root.children)
             {
                 CalculateTree(child, !maximizer);
+                if (child.pruned)
+                {
+                    continue;
+                }
                 if (maximizer && child.Value > root.Value)
                 {
                     root.Value = child.Value;
@@ -128,6 +132,7 @@ namespace MiniMaxTree
                     }
                     if (beta <= alpha)
                     {
+                        root.pruned = true;
                         break;
                     }
                 }
