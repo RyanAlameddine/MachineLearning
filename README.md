@@ -2,8 +2,8 @@
 This repository is simply a collection of a few of my experiments with AI. 
 
 It includes the following:
-* A perceptron with hill climbing and backpropogation
-* A basic Feedforward Nerual Network (built from scratch)
+* A perceptron with hill climbing and gradient descent
+* A basic Feedforward Nerual Network with genetics and gradient descent
 * Flappy Bird AI implemented with Genetic Learning on my feedforward neural net
 * A TicTacToe AI implemented with a Minimax tree
 * A Connect4 AI implemented with a Minimax tree with Alpha Beta pruning and monte-carlo tree search on the value
