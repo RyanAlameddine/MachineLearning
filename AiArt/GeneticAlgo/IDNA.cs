@@ -4,16 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TriangleGen.Genetics
+namespace GeneticAlgo
 {
     /// <summary>
     /// Represents a genetic component
     /// </summary>
-    interface IDNA<T>
+    public interface IDNA<T>
     {
-        void Mutate(Random random, int mutationRate);
+        void Mutate(Random random, float mutationRate);
 
-        void Crossover(Random random, T other);
+        void CrossoverFrom(Random random, T winner);
 
         void Randomize(Random random);
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GeneticAlgo;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -9,15 +10,15 @@ namespace TriangleGen.Genetics
 {
     class TriangleDNA : IDNA<TriangleDNA>
     {
-        readonly int mutationIntensity = 5;
+        readonly int mutationIntensity = 30;
 
         /// <summary>
         /// Indicies of the position of each vertex
         /// </summary>
-        public (IntPoint, IntPoint, IntPoint) Verticies { get; private set; }
-        public Color Color { get; private set; }
+        public (Point, Point, Point) Verticies { get; set; }
+        public Color Color { get; set; }
 
-        public TriangleDNA((IntPoint, IntPoint, IntPoint) verticies)
+        public TriangleDNA((Point, Point, Point) verticies)
         {
             Verticies = verticies;
         }
@@ -25,18 +26,25 @@ namespace TriangleGen.Genetics
         /// <summary>
         /// Triangle will only mutate it's own color
         /// </summary>
-        public void Mutate(Random random, int mutationRate)
+        public void Mutate(Random random, float mutationRate)
         {
             if (random.NextDouble() <= mutationRate)
             {
                 Color = Color.FromArgb(
-                    Color.R + random.Next(-mutationIntensity, mutationIntensity),
-                    Color.G + random.Next(-mutationIntensity, mutationIntensity),
-                    Color.B + random.Next(-mutationIntensity, mutationIntensity));
+                    Clamp(Color.R + random.Next(-mutationIntensity, mutationIntensity)),
+                    Clamp(Color.G + random.Next(-mutationIntensity, mutationIntensity)),
+                    Clamp(Color.B + random.Next(-mutationIntensity, mutationIntensity)));
+            }
+
+            static int Clamp(int x)
+            {
+                if (x <= 0) return 0;
+                if (x >= 255) return 255;
+                return x;
             }
         }
 
-        public void Crossover(Random random, TriangleDNA other)
+        public void CrossoverFrom(Random random, TriangleDNA other)
         {
             Verticies = (other.Verticies.Item1, other.Verticies.Item2, other.Verticies.Item3);
             Color = other.Color;
