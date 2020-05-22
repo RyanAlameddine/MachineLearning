@@ -17,10 +17,13 @@ namespace TriangleGen
 {
     public partial class TriangleGenForm : Form
     {
-        const int populationCount = 1;
-        const float mutationRate = .01f;
+        const int populationCount = 10;
         const float top = .8f;
         const float bottom = .1f;
+        float mutationRate = .1f;
+
+        int sourceWidth = 0;
+        int sourceHeight = 0;
 
         GeneticPopulation<TriangleMeshDNA> population;
 
@@ -28,6 +31,9 @@ namespace TriangleGen
         {
             InitializeComponent();
             timer.Start();
+            mutationRateTracker.Value = (int)(mutationRate * 100);
+            colorMutationIntensityTracker.Value = TriangleDNA.mutationIntensity;
+            positionMutationTracker.Value = TriangleMeshDNA.mutationIntensity;
         }
 
         bool running = false;
@@ -59,18 +65,6 @@ namespace TriangleGen
             population.Randomize(new Random());
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-            if (int.TryParse(textBox1.Text, out var r))
-            {
-                GeneratedImagePreview.Image = population.Population[r].GenerateImage();
-            }
-            else
-            {
-                GeneratedImagePreview.Image = population.Population[population.Population.Length-1].GenerateImage();
-            }
-        }
-
         private void timer_Tick(object sender, EventArgs e)
         {
             if (running)
@@ -96,7 +90,7 @@ namespace TriangleGen
                         }, mutationRate, top, bottom);
 
                     Debug.WriteLine($"{population.Generation} => {fitness}");
-                    textBox1_TextChanged(this, null);
+                    GeneratedImagePreview.Image = population.Population[population.Population.Length - 1].GenerateImage(sourceWidth, sourceHeight);
                 }
             }
         }
@@ -108,10 +102,22 @@ namespace TriangleGen
             {
                 pop.Split();
             }
+            mutationRate /= 4f;
+            TriangleDNA.mutationIntensity /= 2;
+            TriangleMeshDNA.mutationIntensity /= 2;
+            if (TriangleMeshDNA.mutationIntensity < 2) TriangleMeshDNA.mutationIntensity = 2;
+            if (TriangleDNA.mutationIntensity < 10) TriangleDNA.mutationIntensity = 10;
+
+            //update Form
+            mutationRateTracker.Value = (int) (mutationRate * 1000);
+            colorMutationIntensityTracker.Value = TriangleDNA.mutationIntensity;
+            positionMutationTracker.Value = TriangleMeshDNA.mutationIntensity;
         }
 
-        public static Bitmap ResizeImage(Image image, int width, int height)
+        public Bitmap ResizeImage(Image image, int width, int height)
         {
+            sourceWidth = image.Width;
+            sourceHeight = image.Height;
             var destRect = new Rectangle(0, 0, width, height);
             var destImage = new Bitmap(width, height);
 
@@ -139,6 +145,21 @@ namespace TriangleGen
         private void SplitButton_Click(object sender, EventArgs e)
         {
             split = true;
+        }
+
+        private void mutationRateTracker_Scroll(object sender, EventArgs e)
+        {
+            mutationRate = mutationRateTracker.Value / 1000f;
+        }
+
+        private void colorMutationIntensityTracker_Scroll(object sender, EventArgs e)
+        {
+            TriangleDNA.mutationIntensity = colorMutationIntensityTracker.Value;
+        }
+
+        private void positionMutationTracker_Scroll(object sender, EventArgs e)
+        {
+            TriangleMeshDNA.mutationIntensity = positionMutationTracker.Value;
         }
     }
 }

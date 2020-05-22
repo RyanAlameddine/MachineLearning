@@ -10,7 +10,7 @@ namespace TriangleGen.Genetics
 {
     class TriangleDNA : IDNA<TriangleDNA>
     {
-        readonly int mutationIntensity = 30;
+        public static int mutationIntensity = 30;
 
         /// <summary>
         /// Indicies of the position of each vertex
@@ -28,7 +28,7 @@ namespace TriangleGen.Genetics
         /// </summary>
         public void Mutate(Random random, float mutationRate)
         {
-            if (random.NextDouble() <= mutationRate)
+            if (random.NextDouble()*1.5 <= mutationRate)
             {
                 Color = Color.FromArgb(
                     Clamp(Color.R + random.Next(-mutationIntensity, mutationIntensity)),
